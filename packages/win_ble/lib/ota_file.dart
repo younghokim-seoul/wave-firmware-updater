@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 class OTAServer {
 
   static Future<Uint8List> archiveInputStream({String? fileName}) async {
-    String bleServerExe = "packages/win_ble/assets/patch.zip";
+    String bleServerExe = 'packages/win_ble/assets/patch.zip';
     File file = await _getFilePath(bleServerExe, fileName);
     return await file.readAsBytes();
   }

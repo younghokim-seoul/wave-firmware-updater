@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:ota/ota.dart';
 import 'package:wave_desktop_installer/device_info.dart';
 import 'package:win_ble/ota_file.dart';
 import 'package:win_ble/win_ble.dart';
@@ -104,8 +107,8 @@ class _MyAppState extends State<MyApp> {
       context,
       MaterialPageRoute(
           builder: (context) => DeviceInfo(
-            device: device,
-          )),
+                device: device,
+              )),
     );
   }
 
@@ -141,50 +144,19 @@ class _MyAppState extends State<MyApp> {
                   kButton("Start Scan", () {
                     startScanning();
                   }),
-                  kButton("Stop Scan", () {
+                  kButton("Stop Scan", () async {
                     stopScanning();
                   }),
-                  kButton(bleState == BleState.On ? "Turn off Bluetooth" : "Turn on Bluetooth", () async {
-                    // if (bleState == BleState.On) {
-                    //   WinBle.updateBluetoothState(false);
-                    // } else {
-                    //   WinBle.updateBluetoothState(true);
-                    // }
-
-                    // final content = await OTAServer.archiveInputStream();
-                    // print("content: ${content.length} bytes");
-                    //
-                    // final totalSize = content.length;
-                    // final contentSize = (totalSize / _dataLength).ceil();
-                    // print("totalSize: $totalSize");
-                    // print("contentSize: $contentSize");
-                    //
-                    // int page = 1;
-                    //
-                    // int srcPos = (page * 240) - 240;
-                    //
-                    // print("srcPos: $srcPos");
-                    //
-                    // final pageBuff = Uint8List(240);
-                    //
-                    //
-                    // final original =  content.sublist(0,240);
-                    //
-                    // pageBuff.setRange(srcPos, pageBuff.length, content);
-                    //
-                    //
-                    // print("original: $original");
-                    // print("pageBuff: $pageBuff");
-                    //
-                    //
-                    //
-                    //
-                    // final OtaDataRequest otaDataRequest = OtaDataRequest();
-                    //
-                    // otaDataRequest.setDate(pageBuff);
-                    // otaDataRequest.setHeader(page: srcPos);
-                    // print(otaDataRequest.getRawBytes());
-                  }),
+                  kButton(
+                    bleState == BleState.On ? "Turn off Bluetooth" : "Turn on Bluetooth",
+                    () async {
+                      if (bleState == BleState.On) {
+                        WinBle.updateBluetoothState(false);
+                      } else {
+                        WinBle.updateBluetoothState(true);
+                      }
+                    },
+                  ),
                 ],
               ),
               const Divider(),
@@ -199,26 +171,26 @@ class _MyAppState extends State<MyApp> {
                 child: devices.isEmpty
                     ? noDeviceFoundWidget()
                     : ListView.builder(
-                  itemCount: devices.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    BleDevice device = devices[index];
-                    return InkWell(
-                      onTap: () {
-                        stopScanning();
+                        itemCount: devices.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          BleDevice device = devices[index];
+                          return InkWell(
+                            onTap: () {
+                              stopScanning();
 
-                        onDeviceTap(device);
-                      },
-                      child: Card(
-                        child: ListTile(
-                            title: Text(
-                              "${device.name.isEmpty ? "N/A" : device.name} ( ${device.address} )",
+                              onDeviceTap(device);
+                            },
+                            child: Card(
+                              child: ListTile(
+                                  title: Text(
+                                    "${device.name.isEmpty ? "N/A" : device.name} ( ${device.address} )",
+                                  ),
+                                  // trailing: Text(device.manufacturerData.toString()),
+                                  subtitle: Text("Rssi : ${device.rssi} | AdvTpe : ${device.advType}")),
                             ),
-                            // trailing: Text(device.manufacturerData.toString()),
-                            subtitle: Text("Rssi : ${device.rssi} | AdvTpe : ${device.advType}")),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
@@ -242,15 +214,15 @@ class _MyAppState extends State<MyApp> {
         isScanning
             ? const CircularProgressIndicator()
             : InkWell(
-          onTap: () {
-            startScanning();
-          },
-          child: const Icon(
-            Icons.bluetooth,
-            size: 100,
-            color: Colors.grey,
-          ),
-        ),
+                onTap: () {
+                  startScanning();
+                },
+                child: const Icon(
+                  Icons.bluetooth,
+                  size: 100,
+                  color: Colors.grey,
+                ),
+              ),
         const SizedBox(
           height: 10,
         ),

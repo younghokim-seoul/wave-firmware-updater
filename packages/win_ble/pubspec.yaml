@@ -26,4 +26,5 @@ flutter:
   assets:
     - packages/win_ble/assets/BLEServer.exe
     - packages/win_ble/assets/patch.zip
+    - packages/win_ble/assets/patch_real.zip
 

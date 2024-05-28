@@ -1,8 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:ota/ota.dart';
+import 'package:wave_desktop_installer/domain/ota_data.dart';
+import 'package:wave_desktop_installer/utils/extension.dart';
+import 'package:win_ble/ota_file.dart';
 import 'package:win_ble/win_ble.dart';
+
+const String waveServiceUuid = "dec7cf01-c159-43c4-9fee-0efde1a0f54b";
+const String waveWriteUuid = "dec7cf03-c159-43c4-9fee-0efde1a0f54b";
+const String waveNotifyUuid = "dec7cf04-c159-43c4-9fee-0efde1a0f54b";
 
 class DeviceInfo extends StatefulWidget {
   final BleDevice device;
@@ -15,7 +25,7 @@ class DeviceInfo extends StatefulWidget {
 
 class _DeviceInfoState extends State<DeviceInfo> {
   late BleDevice device;
-
+  String? serviceId;
   TextEditingController serviceTxt = TextEditingController();
   TextEditingController characteristicTxt = TextEditingController();
   TextEditingController uint8DataTxt = TextEditingController();
@@ -24,6 +34,8 @@ class _DeviceInfoState extends State<DeviceInfo> {
   List<BleCharacteristic> characteristics = [];
   String result = "";
   String error = "none";
+
+  OtaData otaData = OtaData.blank();
 
   final _snackbarDuration = const Duration(milliseconds: 700);
 
@@ -38,45 +50,200 @@ class _DeviceInfoState extends State<DeviceInfo> {
 
   connect(String address) async {
     try {
-      await WinBle.connect(address);
+      final result = await WinBle.connect(address);
+
+      print("Connect Result : $result");
+
+      if (result) {
+        final serviceUUID = await WinBle.discoverServices(address);
+        final waveUUID = serviceUUID.where((uuid) => uuid == waveServiceUuid).firstOrNull;
+
+        if (waveUUID == null) return;
+
+        serviceId = waveUUID;
+        print('waveUUID => $waveUUID');
+        await WinBle.discoverCharacteristics(address: address, serviceId: waveUUID);
+
+        await setNotificationEnable(address, waveUUID, waveNotifyUuid);
+        _putCharacteristicValue(address, waveUUID, waveNotifyUuid);
+      }
     } catch (e) {
+      disconnect(address);
       setState(() {
         error = e.toString();
       });
     }
   }
 
-  canPair(address) async {
-    bool canPair = await WinBle.canPair(address);
-    showNotification("CanPair : $canPair");
+  void _putCharacteristicValue(
+    String address,
+    String serviceId,
+    String characteristicId,
+  ) {
+    if (!characteristicValueChangeMap.containsKey(address)) {
+      characteristicValueChangeMap[address] = WinBle.characteristicValueStreamOf(
+        address: address,
+        serviceId: serviceId,
+        characteristicId: characteristicId,
+      ).listen(
+        (data) {
+          try {
+            if (data != null) {
+              final packet = data.whereType<int>().toList();
+              final msgType = packet.sublist(2, 5);
+              String hex = utf8.decode(packet);
+              String event = utf8.decode(msgType);
+              print("[RECEIVE PACKET] hex : " + hex.toString() + " envet : " + event.toString());
+              switch (event) {
+                case "SET":
+                  print("SET");
+                  final status = hex.extractDataBootloaderData();
+                  print("status " + status);
+
+                  if (status == "OK") {
+                    // transferData(address, serviceId, waveWriteUuid);
+                  } else {
+                    print("OTA Fail");
+                  }
+                  break;
+                case "FWD":
+                  print("FWD");
+                  final response = hex.extractDataFirmwareDownData().split(",");
+
+                  if (response.length < 3) {
+                    print("FW DOWN Data Varity");
+                    final status = response[1];
+
+                    if (status == "COM") {
+                      print("펌웨어 파일 유효성 체크 성공");
+                    } else {
+                      print("펌웨어 파일 유효성 체크 실패 파일 깨짐.");
+                    }
+
+                    return;
+                  } else {
+                    final status = response[1];
+                    final pageNum = int.parse(response[2]);
+
+                    print("status : $status pageNum : $pageNum totalPageNum : ${otaData.totalPageNum}");
+
+                    if (status == "OK") {
+                      otaData = otaData.copyWith(pageNum: pageNum);
+                    }
+
+                    if (pageNum < otaData.totalPageNum) {
+                      transferData(address, serviceId, characteristicId);
+                    } else {
+                      print("WOW OTA COMPLETE........");
+                      otaData = OtaData.blank();
+
+                      OtaDataVarityRequest otaDataVarityRequest = OtaDataVarityRequest();
+                      otaDataVarityRequest.setDate();
+
+                      writeCharacteristic(address, serviceId, waveWriteUuid, otaDataVarityRequest.getRawBytes(), true);
+                    }
+                  }
+
+                  break;
+              }
+            }
+          } catch (e) {
+            print("characteristicValueChangeMap error : $e");
+          }
+        },
+      );
+    }
   }
 
-  isPaired(address) async {
-    bool isPaired = await WinBle.isPaired(address, forceRefresh: true);
-    showNotification("isPaired : $isPaired");
-  }
+  void transferData(String address, String serviceId, String characteristicId) async {
+    if (otaData == OtaData.blank()) {
+      print('ota data blank..!!!!! error');
+      return;
+    }
+    print("[${otaData.pageNum + 1} / ${otaData.totalPageNum}]");
 
-  pair(String address) async {
     try {
-      await WinBle.pair(address);
-      showSuccess("Paired Successfully");
+      int sendPage = otaData.pageNum;
+      final srcPos = sendPage * 240;
+      final endPos = min(srcPos + otaDataLength, otaData.totalDataLen);
+
+      print('startPos: $srcPos' ' endPos: $endPos');
+
+      Uint8List pageBuff = otaData.totalBuff.sublist(srcPos, endPos);
+
+      // 패킷의 크기가 240 바이트보다 작으면, 패킷의 뒷부분을 0으로 채웁니다.
+
+      if ((otaData.pageNum + 1) == otaData.totalPageNum) {
+        var paddedPacket = Uint8List(240);
+        paddedPacket.setRange(0, pageBuff.length, pageBuff);
+        pageBuff = paddedPacket;
+      }
+
+      otaData = otaData.copyWith(pageBuff: pageBuff);
+
+      final OtaDataRequest otaDataRequest = OtaDataRequest();
+
+      sendPage = sendPage + 1;
+      print('Page => $sendPage');
+
+      otaDataRequest.setDate(pageBuff);
+      otaDataRequest.setHeader(page: sendPage);
+
+      // int chunkSize = (otaDataRequest.getRawBytes().length / 3).ceil(); // 데이터를 3등분하기 위한 청크 크기 계산
+
+      // for (int i = 0; i < 3; i++) {
+      //   // 각 청크의 시작과 끝 인덱스 계산
+      //   int start = i * chunkSize;
+      //   int end = min(start + chunkSize, otaDataRequest.getRawBytes().length);
+      //
+      //   // 청크 데이터 추출
+      //   Uint8List chunkData = otaDataRequest.getRawBytes().sublist(start, end);
+      //
+      //   // 2초 간격으로 청크 데이터 전송
+      //   await Future.delayed(Duration(seconds: 2), () async {
+      //     await writeCharacteristic(address, "dec7cf01-c159-43c4-9fee-0efde1a0f54b", "dec7cf03-c159-43c4-9fee-0efde1a0f54b", chunkData, true);
+      //   });
+      // }
+
+      print("send--->>>> ${otaDataRequest.getRawBytes()}");
+      await writeCharacteristic(address, "dec7cf01-c159-43c4-9fee-0efde1a0f54b", "dec7cf03-c159-43c4-9fee-0efde1a0f54b",
+          otaDataRequest.getRawBytes(), true);
     } catch (e) {
-      showError("PairError : $e");
+      showError("writeCharError : $e");
       setState(() {
         error = e.toString();
       });
     }
   }
 
-  unPair(String address) async {
+  Future<void> setNotificationEnable(
+    String address,
+    String serviceId,
+    String characteristicId,
+  ) async {
     try {
-      await WinBle.unPair(address);
-      showSuccess("UnPaired Successfully");
+      await WinBle.unSubscribeFromCharacteristic(
+          address: address, serviceId: serviceId, characteristicId: characteristicId);
+      await WinBle.subscribeToCharacteristic(
+          address: address, serviceId: serviceId, characteristicId: characteristicId);
+      print("SubscribeToCharacteristic Success");
     } catch (e) {
-      showError("UnPairError : $e");
-      setState(() {
-        error = e.toString();
-      });
+      print("unSubscribeToCharacteristic Error: $e");
+      for (int i = 0; i < 3; i++) {
+        try {
+          await WinBle.subscribeToCharacteristic(
+              address: address, serviceId: serviceId, characteristicId: characteristicId);
+          print("subscribeToCharacteristic Success  Retry Count: $i");
+          break;
+        } catch (e) {
+          print("subscribeToCharacteristic Error : $e, Retry Count: $i");
+
+          if (i == 2) {
+            print("Failed to subscribe to characteristic after 3 attempts");
+            rethrow;
+          }
+        }
+      }
     }
   }
 
@@ -84,25 +251,49 @@ class _DeviceInfoState extends State<DeviceInfo> {
     try {
       await WinBle.disconnect(address);
       showSuccess("Disconnected");
+      disconnectAndClearAllDevices();
     } catch (e) {
       if (!mounted) return;
       showError(e.toString());
     }
   }
 
-  discoverServices(address) async {
+  startOTA(address) async {
     try {
-      var data = await WinBle.discoverServices(address);
-      print(data);
-      setState(() {
-        services = data;
-      });
+      print("Starting OTA..." + address);
+      final otaStartRequest = OtaStartRequest();
+      final content = await OTAServer.archiveInputStream();
+      final totalSize = content.length;
+
+      otaData = otaData.copyWith(
+        totalDataLen: totalSize,
+        totalPageNum: (totalSize / 240).ceil(),
+        lastPageDataLen: totalSize % 240,
+        totalBuff: content,
+      );
+
+      otaStartRequest.setDate(otaData.totalPageNum);
+
+      final send = otaStartRequest.getRawBytes();
+
+      await writeCharacteristic(address, serviceId!, waveWriteUuid, send, true);
     } catch (e) {
       showError("DiscoverServiceError : $e");
       setState(() {
         error = e.toString();
       });
     }
+  }
+
+  void disconnectAndClearAllDevices() {
+    if (characteristicValueChangeMap.isNotEmpty) {
+      characteristicValueChangeMap.forEach((key, value) {
+        value.cancel();
+      });
+      characteristicValueChangeMap.clear();
+    }
+
+    serviceId = null;
   }
 
   discoverCharacteristic(address, serviceID) async {
@@ -139,11 +330,7 @@ class _DeviceInfoState extends State<DeviceInfo> {
   writeCharacteristic(String address, String serviceID, String charID, Uint8List data, bool writeWithResponse) async {
     try {
       await WinBle.write(
-          address: address,
-          service: serviceID,
-          characteristic: charID,
-          data: data,
-          writeWithResponse: writeWithResponse);
+          address: address, service: serviceID, characteristic: charID, data: data, writeWithResponse: true);
     } catch (e) {
       showError("writeCharError : $e");
       setState(() {
@@ -178,20 +365,21 @@ class _DeviceInfoState extends State<DeviceInfo> {
 
   StreamSubscription? _connectionStream;
   StreamSubscription? _characteristicValueStream;
+  final characteristicValueChangeMap = <String, StreamSubscription>{};
 
   @override
   void initState() {
     device = widget.device;
     // subscribe to connection events
     _connectionStream = WinBle.connectionStreamOf(device.address).listen((event) {
+      if (event == false) {
+        disconnectAndClearAllDevices();
+        // connect(device.address);
+      }
       setState(() {
         connected = event;
       });
       showSuccess("Connected : $event");
-    });
-
-    _characteristicValueStream = WinBle.characteristicValueStream.listen((event) {
-      print("CharValue : $event");
     });
     super.initState();
   }
@@ -242,8 +430,8 @@ class _DeviceInfoState extends State<DeviceInfo> {
                 kButton("Disconnect", () {
                   disconnect(device.address);
                 }),
-                kButton("Discover Services", () {
-                  discoverServices(device.address);
+                kButton("Start OTA", () {
+                  startOTA(device.address);
                 }, enabled: connected),
                 kButton("Get MaxMtuSize", () {
                   WinBle.getMaxMtuSize(device.address).then((value) {
@@ -257,18 +445,18 @@ class _DeviceInfoState extends State<DeviceInfo> {
               // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                kButton("canPair", () {
-                  canPair(device.address);
+                kButton("canPair", () async {
+                  transferData(widget.device.address, serviceId!, waveWriteUuid);
                 }, enabled: connected),
-                kButton("isPaired", () {
-                  isPaired(device.address);
+                kButton("isPaired", () async {
+                  OtaDataVarityRequest otaDataVarityRequest = OtaDataVarityRequest();
+                  otaDataVarityRequest.setDate();
+
+                  writeCharacteristic(
+                      widget.device.address, serviceId!, waveWriteUuid, otaDataVarityRequest.getRawBytes(), true);
                 }, enabled: connected),
-                kButton("Pair", () {
-                  pair(device.address);
-                }, enabled: connected),
-                kButton("UnPair", () {
-                  unPair(device.address);
-                }, enabled: connected),
+                kButton("Pair", () {}, enabled: connected),
+                kButton("UnPair", () {}, enabled: connected),
               ],
             ),
             // Service List

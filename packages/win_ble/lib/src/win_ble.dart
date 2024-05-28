@@ -147,7 +147,7 @@ class WinBle {
   /// [connect] will update a Stream of boolean [getConnectionStream]
   /// true if connected
   /// false if disconnected
-  static Future<void> connect(String address) async {
+  static Future<bool> connect(String address) async {
     try {
       var result = await _channel.invokeMethod("connect", args: {
         "address": address.replaceAll(":", ""),
@@ -161,6 +161,8 @@ class WinBle {
         "device": address,
         "connected": !connectionFailed,
       });
+
+      return !connectionFailed;
     } catch (e) {
       rethrow;
     }
