@@ -21,6 +21,8 @@ mixin _$OtaData {
   int get pageNum => throw _privateConstructorUsedError;
   int get lastPageDataLen => throw _privateConstructorUsedError;
   int get sendCnt => throw _privateConstructorUsedError;
+  int get retryCnt => throw _privateConstructorUsedError;
+  int get maxRetryCnt => throw _privateConstructorUsedError;
   Uint8List get totalBuff => throw _privateConstructorUsedError;
   Uint8List get pageBuff => throw _privateConstructorUsedError;
 
@@ -39,6 +41,8 @@ abstract class $OtaDataCopyWith<$Res> {
       int pageNum,
       int lastPageDataLen,
       int sendCnt,
+      int retryCnt,
+      int maxRetryCnt,
       Uint8List totalBuff,
       Uint8List pageBuff});
 }
@@ -61,6 +65,8 @@ class _$OtaDataCopyWithImpl<$Res, $Val extends OtaData>
     Object? pageNum = null,
     Object? lastPageDataLen = null,
     Object? sendCnt = null,
+    Object? retryCnt = null,
+    Object? maxRetryCnt = null,
     Object? totalBuff = null,
     Object? pageBuff = null,
   }) {
@@ -84,6 +90,14 @@ class _$OtaDataCopyWithImpl<$Res, $Val extends OtaData>
       sendCnt: null == sendCnt
           ? _value.sendCnt
           : sendCnt // ignore: cast_nullable_to_non_nullable
+              as int,
+      retryCnt: null == retryCnt
+          ? _value.retryCnt
+          : retryCnt // ignore: cast_nullable_to_non_nullable
+              as int,
+      maxRetryCnt: null == maxRetryCnt
+          ? _value.maxRetryCnt
+          : maxRetryCnt // ignore: cast_nullable_to_non_nullable
               as int,
       totalBuff: null == totalBuff
           ? _value.totalBuff
@@ -110,6 +124,8 @@ abstract class _$$OtaDataImplCopyWith<$Res> implements $OtaDataCopyWith<$Res> {
       int pageNum,
       int lastPageDataLen,
       int sendCnt,
+      int retryCnt,
+      int maxRetryCnt,
       Uint8List totalBuff,
       Uint8List pageBuff});
 }
@@ -130,6 +146,8 @@ class __$$OtaDataImplCopyWithImpl<$Res>
     Object? pageNum = null,
     Object? lastPageDataLen = null,
     Object? sendCnt = null,
+    Object? retryCnt = null,
+    Object? maxRetryCnt = null,
     Object? totalBuff = null,
     Object? pageBuff = null,
   }) {
@@ -154,6 +172,14 @@ class __$$OtaDataImplCopyWithImpl<$Res>
           ? _value.sendCnt
           : sendCnt // ignore: cast_nullable_to_non_nullable
               as int,
+      retryCnt: null == retryCnt
+          ? _value.retryCnt
+          : retryCnt // ignore: cast_nullable_to_non_nullable
+              as int,
+      maxRetryCnt: null == maxRetryCnt
+          ? _value.maxRetryCnt
+          : maxRetryCnt // ignore: cast_nullable_to_non_nullable
+              as int,
       totalBuff: null == totalBuff
           ? _value.totalBuff
           : totalBuff // ignore: cast_nullable_to_non_nullable
@@ -175,6 +201,8 @@ class _$OtaDataImpl implements _OtaData {
       required this.pageNum,
       required this.lastPageDataLen,
       required this.sendCnt,
+      required this.retryCnt,
+      required this.maxRetryCnt,
       required this.totalBuff,
       required this.pageBuff});
 
@@ -189,13 +217,17 @@ class _$OtaDataImpl implements _OtaData {
   @override
   final int sendCnt;
   @override
+  final int retryCnt;
+  @override
+  final int maxRetryCnt;
+  @override
   final Uint8List totalBuff;
   @override
   final Uint8List pageBuff;
 
   @override
   String toString() {
-    return 'OtaData(totalDataLen: $totalDataLen, totalPageNum: $totalPageNum, pageNum: $pageNum, lastPageDataLen: $lastPageDataLen, sendCnt: $sendCnt, totalBuff: $totalBuff, pageBuff: $pageBuff)';
+    return 'OtaData(totalDataLen: $totalDataLen, totalPageNum: $totalPageNum, pageNum: $pageNum, lastPageDataLen: $lastPageDataLen, sendCnt: $sendCnt, retryCnt: $retryCnt, maxRetryCnt: $maxRetryCnt, totalBuff: $totalBuff, pageBuff: $pageBuff)';
   }
 
   @override
@@ -211,6 +243,10 @@ class _$OtaDataImpl implements _OtaData {
             (identical(other.lastPageDataLen, lastPageDataLen) ||
                 other.lastPageDataLen == lastPageDataLen) &&
             (identical(other.sendCnt, sendCnt) || other.sendCnt == sendCnt) &&
+            (identical(other.retryCnt, retryCnt) ||
+                other.retryCnt == retryCnt) &&
+            (identical(other.maxRetryCnt, maxRetryCnt) ||
+                other.maxRetryCnt == maxRetryCnt) &&
             const DeepCollectionEquality().equals(other.totalBuff, totalBuff) &&
             const DeepCollectionEquality().equals(other.pageBuff, pageBuff));
   }
@@ -223,6 +259,8 @@ class _$OtaDataImpl implements _OtaData {
       pageNum,
       lastPageDataLen,
       sendCnt,
+      retryCnt,
+      maxRetryCnt,
       const DeepCollectionEquality().hash(totalBuff),
       const DeepCollectionEquality().hash(pageBuff));
 
@@ -240,6 +278,8 @@ abstract class _OtaData implements OtaData {
       required final int pageNum,
       required final int lastPageDataLen,
       required final int sendCnt,
+      required final int retryCnt,
+      required final int maxRetryCnt,
       required final Uint8List totalBuff,
       required final Uint8List pageBuff}) = _$OtaDataImpl;
 
@@ -253,6 +293,10 @@ abstract class _OtaData implements OtaData {
   int get lastPageDataLen;
   @override
   int get sendCnt;
+  @override
+  int get retryCnt;
+  @override
+  int get maxRetryCnt;
   @override
   Uint8List get totalBuff;
   @override

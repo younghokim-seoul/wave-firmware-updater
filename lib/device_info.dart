@@ -119,16 +119,20 @@ class _DeviceInfoState extends State<DeviceInfo> {
                     } else {
                       print("펌웨어 파일 유효성 체크 실패 파일 깨짐.");
                     }
-
-                    return;
                   } else {
                     final status = response[1];
                     final pageNum = int.parse(response[2]);
 
+                    print("curPage " + otaData.pageNum.toString());
                     print("status : $status pageNum : $pageNum totalPageNum : ${otaData.totalPageNum}");
 
+                    //만약 3번 패킷이 NG 발생했어...
+                    //그럼 다시 3번을 보내야하잖아..
+
                     if (status == "OK") {
-                      otaData = otaData.copyWith(pageNum: pageNum);
+                      otaData = otaData.copyWith(pageNum: pageNum, retryCnt: 0);
+                    } else {
+                      otaData = otaData.copyWith(retryCnt: otaData.retryCnt + 1);
                     }
 
                     if (pageNum < otaData.totalPageNum) {

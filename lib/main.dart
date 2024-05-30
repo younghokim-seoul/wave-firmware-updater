@@ -3,14 +3,42 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ota/ota.dart';
 import 'package:wave_desktop_installer/device_info.dart';
+import 'package:wave_desktop_installer/di/configurations.dart';
+import 'package:wave_desktop_installer/feature/dashboard_page.dart';
+import 'package:wave_desktop_installer/feature/page_items.dart';
 import 'package:win_ble/ota_file.dart';
 import 'package:win_ble/win_ble.dart';
 import 'package:win_ble/win_file.dart';
+import 'package:yaru/theme.dart';
 
-void main() {
-  runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: MyApp()));
+final materialAppNavigatorKeyProvider = Provider((ref) => GlobalKey<NavigatorState>());
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await configureDependencies();
+  runApp(const ProviderScope(child: Home()));
+}
+
+class Home extends ConsumerWidget {
+  const Home({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return YaruTheme(builder: (context, yaru, child) {
+      return MaterialApp(
+        title: 'Wave',
+        debugShowCheckedModeBanner: false,
+        theme: yaru.theme,
+        darkTheme: yaru.darkTheme,
+        home: DashboardPage(
+          pageItems: routes,
+        ),
+      );
+    });
+  }
 }
 
 class MyApp extends StatefulWidget {

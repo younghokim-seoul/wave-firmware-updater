@@ -14,6 +14,8 @@ class OtaData with _$OtaData {
     required int pageNum,
     required int lastPageDataLen,
     required int sendCnt,
+    required int retryCnt,
+    required int maxRetryCnt,
     required Uint8List totalBuff,
     required Uint8List pageBuff,
   }) = _OtaData;
@@ -25,6 +27,8 @@ class OtaData with _$OtaData {
     pageNum: 0,
     lastPageDataLen: 0,
     sendCnt: 0,
+    retryCnt: 1,
+    maxRetryCnt: 5,
     totalBuff: Uint8List(0),
     pageBuff: Uint8List(0),
   );
