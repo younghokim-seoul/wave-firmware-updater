@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
+import 'package:wave_desktop_installer/feature/widget/bounce_button.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
@@ -40,7 +41,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
             Gap(30),
             Column(
               children: [
-                InkWell(
+                BounceGray(
                   onTap: () {},
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 25),
@@ -71,6 +72,9 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                   ),
                 ),
                 Gap(38),
+                BounceGray(child:  Assets.icons.iconWavetoolsConnection.image(width: 100), onTap: (){
+                  Log.d('Connection Start');
+                }),
               ],
             )
           ],
