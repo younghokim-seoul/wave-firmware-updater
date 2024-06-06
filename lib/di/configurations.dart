@@ -1,7 +1,9 @@
-
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tcp_client/tcp_client.dart';
+import 'package:wave_desktop_installer/data/repository/wifi_scanner.dart';
+
 
 import 'configurations.config.dart' as config;
 
@@ -22,5 +24,7 @@ Future<void> $initGetIt(
   final gh = GetItHelper(getIt, environment.toString());
   final sharedPreferences = await SharedPreferences.getInstance();
 
+  gh.lazySingleton<TcpClientRepository>(() => TcpClientRepository('192.168.8.1', serverPort: 4999));
+  gh.lazySingleton<WifiScanner>(() => WifiScanner());
   config.$initGetIt(getIt);
 }

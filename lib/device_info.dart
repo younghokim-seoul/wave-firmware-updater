@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:control_protocol/control_protocol.dart';
 import 'package:flutter/material.dart';
-import 'package:ota/ota.dart';
+
 import 'package:wave_desktop_installer/domain/ota_data.dart';
 import 'package:wave_desktop_installer/utils/extension.dart';
 import 'package:win_ble/ota_file.dart';

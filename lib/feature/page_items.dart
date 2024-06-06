@@ -25,14 +25,14 @@ class PageItem {
 
 final routes = [
   PageItem(
+    title: 'Sensor Connection',
+    iconBuilder: (context, selected) => const Icon(YaruIcons.network_cellular_no_route),
+    pageBuilder: (context) => const ConnectionPage(),
+  ),
+  PageItem(
     title: 'Firmware Update',
     iconBuilder: (context, selected) => const Icon(YaruIcons.update),
     pageBuilder: (context) => const FirmwareUpdatePage(),
-  ),
-  PageItem(
-    title: 'Sensor Connection',
-    iconBuilder: (context, selected) => const Icon(YaruIcons.network_wired_filled),
-    pageBuilder: (context) => const ConnectionPage(),
   ),
   PageItem(
     title: 'Alignment Setting',

@@ -14,8 +14,13 @@ dependencies:
 
   win_ble:
     path: packages/win_ble
-  ota:
-    path: packages/ota
+  control_protocol:
+    path: packages/control_protocol
+  tcp_client:
+    path: packages/tcp_client
+  yaru:
+    path: packages/yaru
+
 
   injectable: ^2.3.2
   get_it: ^7.6.6
@@ -28,10 +33,23 @@ dependencies:
   retrofit: ^4.0.3  # dio 패키지를 사용한 http 요청 code generator 패키지
   shared_preferences: ^2.2.2  # shared preferences 패키지
 
+  file: ^7.0.0
+  path: ^1.9.0
+
+
   cupertino_icons: ^1.0.6
 
 
-  yaru: ^4.1.0
+
+  webview_windows: ^0.4.0
+  window_manager: ^0.3.9
+  percent_indicator: ^4.2.3
+
+  win32: ^5.5.1
+  ffi: ^2.1.2
+
+
+
 
 dev_dependencies:
   flutter_test:
@@ -41,8 +59,20 @@ dev_dependencies:
   injectable_generator:
   retrofit_generator:
   build_runner:
+  flutter_gen_runner:
   flutter_lints: ^3.0.0
 
 flutter:
-
   uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/fonts/
+  fonts:
+    - family: NotoSansKR
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Regular.ttf
+
+flutter_gen:
+  integrations:
+    flutter_svg: true
+  output: lib/assets/

@@ -1,8 +1,10 @@
-import 'package:wave_desktop_installer/domain/repository/connection_repository.dart';
+import 'package:injectable/injectable.dart';
+import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 
 
 
-class BleRepositoryImp extends ConnectionRepository {
+@LazySingleton(as: BluetoothRepository)
+class BleRepositoryImp extends BluetoothRepository {
   @override
   Future<void> connect(Map<String, dynamic> request) {
     // TODO: implement connect

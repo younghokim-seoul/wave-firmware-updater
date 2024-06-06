@@ -16,6 +16,7 @@ extension ExtractStringExtension on String {
   }
 
 
+
   String extractDataFirmwareDownData() {
     int startIndex = indexOf('\$\$') + 2;
     int endIndex = indexOf('%');

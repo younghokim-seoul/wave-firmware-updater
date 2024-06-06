@@ -13,18 +13,25 @@ import 'package:wave_desktop_installer/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    String packet = '\$\$HB 2:9:11:2,100,0,54,15,1, 0,1,1,0% \#\#';
+    String stx = '\$\$';
+    String etx = '\#\#';
+    if (packet.startsWith("\$\$") && packet.endsWith("\#\#")) {
+      print("Packet is valid");
+      int dataEndIndex = packet.indexOf("%");
+      print(dataEndIndex);
+      String hex = packet.substring(stx.length, dataEndIndex);
+      hex = hex.replaceAllMapped(RegExp(r',\s'), (match) => ',');
+      final values = hex.split(' ').skip(1).toList();
+      print(values.length);
+      print(values);
+    }
   });
+
+  String removeStxEtx(String packet, String stx, String etx) {
+    if (packet.startsWith(stx) && packet.endsWith(etx)) {
+      return packet.substring(stx.length, packet.length - etx.length);
+    }
+    return packet;
+  }
 }
