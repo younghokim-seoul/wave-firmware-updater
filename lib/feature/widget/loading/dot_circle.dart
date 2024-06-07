@@ -1,19 +1,35 @@
 import 'dart:math' as math show sin, pi;
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
 
 class SpinKitFadingCircle extends StatefulWidget {
   const SpinKitFadingCircle({
-    super.key,
+    required this.size,
     this.color,
-    this.size = 160.0,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
-  })  : assert(
-  !(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
-  'You should specify either a itemBuilder or a color',
-  );
+    super.key,
+  }) : assert(
+          !(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
+          'You should specify either a itemBuilder or a color',
+        );
+
+  const SpinKitFadingCircle.medium({
+    this.color = Colors.white,
+    this.itemBuilder,
+    this.duration = const Duration(milliseconds: 1200),
+    this.controller,
+    super.key,
+  }) : size = 50.0;
+
+  const SpinKitFadingCircle.large({
+    this.color = Colors.white,
+    this.itemBuilder,
+    this.duration = const Duration(milliseconds: 1200),
+    this.controller,
+    super.key,
+  }) : size = 160.0;
 
   final Color? color;
   final double size;
@@ -83,11 +99,11 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
   Widget _itemBuilder(int index) => widget.itemBuilder != null
       ? widget.itemBuilder!(context, index)
       : DecoratedBox(
-    decoration: BoxDecoration(
-      color: widget.color,
-      shape: BoxShape.circle,
-    ),
-  );
+          decoration: BoxDecoration(
+            color: widget.color,
+            shape: BoxShape.circle,
+          ),
+        );
 }
 
 class DelayTween extends Tween<double> {

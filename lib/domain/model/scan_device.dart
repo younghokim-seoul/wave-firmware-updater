@@ -9,10 +9,9 @@ class ScanDevice with _$ScanDevice {
     required String deviceName,
     required String macAddress,
     required String rssi,
-    required ConnectionStatus status,
   }) = _ScanDevice;
 
-  factory ScanDevice.toDomain(String deviceName, String macAddress, String rssi,ConnectionStatus status) {
-    return ScanDevice(deviceName: deviceName, macAddress: macAddress, rssi: rssi,status: status);
+  factory ScanDevice.toDomain(String deviceName, String macAddress, String rssi) {
+    return ScanDevice(deviceName: deviceName, macAddress: macAddress, rssi: rssi);
   }
 }

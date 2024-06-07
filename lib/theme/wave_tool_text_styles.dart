@@ -10,7 +10,7 @@ abstract class WaveTextStyles {
   static TextTheme get textTheme => const TextTheme(
     labelLarge: buttonLarge,
     titleMedium: subtitle1,
-    titleSmall: subtitle2,
+    titleSmall: listTitle1,
     labelSmall: overline,
     bodyLarge: body1,
     bodyMedium: body2,
@@ -77,10 +77,11 @@ abstract class WaveTextStyles {
     letterSpacing: 0.03,
   );
 
-  static const TextStyle subtitle2 = TextStyle(
+  static const TextStyle listTitle1 = TextStyle(
     fontFamily: fontFamily,
     fontWeight: FontWeight.w400,
-    fontSize: 15,
+    fontSize: 24,
+    color: Colors.white,
     letterSpacing: 0.02,
   );
 

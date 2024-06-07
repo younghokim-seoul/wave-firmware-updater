@@ -22,16 +22,44 @@ class $AssetsFontsGen {
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  /// File path: assets/icons/Icon_bluetooth_disable.png
+  AssetGenImage get iconBluetoothDisable =>
+      const AssetGenImage('assets/icons/Icon_bluetooth_disable.png');
+
+  /// File path: assets/icons/Icon_bluetooth_enable.png
+  AssetGenImage get iconBluetoothEnable =>
+      const AssetGenImage('assets/icons/Icon_bluetooth_enable.png');
+
+  /// File path: assets/icons/Icon_wave.png
+  AssetGenImage get iconWave =>
+      const AssetGenImage('assets/icons/Icon_wave.png');
+
   /// File path: assets/icons/Icon_wavetools_connection.png
   AssetGenImage get iconWavetoolsConnection =>
       const AssetGenImage('assets/icons/Icon_wavetools_connection.png');
+
+  /// File path: assets/icons/Icon_wifi_disable.png
+  AssetGenImage get iconWifiDisable =>
+      const AssetGenImage('assets/icons/Icon_wifi_disable.png');
+
+  /// File path: assets/icons/Icon_wifi_enable.png
+  AssetGenImage get iconWifiEnable =>
+      const AssetGenImage('assets/icons/Icon_wifi_enable.png');
 
   /// File path: assets/icons/icon_wave_tools.png
   AssetGenImage get iconWaveTools =>
       const AssetGenImage('assets/icons/icon_wave_tools.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [iconWavetoolsConnection, iconWaveTools];
+  List<AssetGenImage> get values => [
+        iconBluetoothDisable,
+        iconBluetoothEnable,
+        iconWave,
+        iconWavetoolsConnection,
+        iconWifiDisable,
+        iconWifiEnable,
+        iconWaveTools
+      ];
 }
 
 class Assets {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
@@ -9,16 +10,14 @@ import 'package:wave_desktop_installer/data/repository/connection_status.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
 import 'package:win32/win32.dart';
 
-typedef WifiSearchEventCallback = void Function(String ssid,String rssi);
-
+typedef WifiSearchEventCallback = void Function(String ssid, String rssi);
 
 class WifiScanner {
-
   Future<List<ScanDevice>> performNetworkScan() async {
     return await compute(scanNetworks, null);
   }
-  List<ScanDevice> scanNetworks(_){
 
+  List<ScanDevice> scanNetworks(_) {
     final List<ScanDevice> results = [];
 
     final hr = CoInitializeEx(nullptr, COINIT.COINIT_APARTMENTTHREADED);
@@ -45,7 +44,6 @@ class WifiScanner {
     // 무선 LAN 인터페이스 열거
     final ppInterfaceList = calloc<Pointer<WLAN_INTERFACE_INFO_LIST>>();
     if (ppInterfaceList == nullptr) {
-
       _freeResources(hClientHandle, pdwNegotiatedVersion, null, null, null);
       CoUninitialize();
       throw Exception('Memory allocation failed.');
@@ -123,11 +121,10 @@ class WifiScanner {
       final ssid = network.dot11Ssid.toRawString();
       final rssi = network.wlanSignalQuality;
 
-
-      print('SSID: $ssid');
-      print('RSSI: $rssi');
-      results.add(ScanDevice(deviceName: ssid, macAddress: ssid, rssi: rssi.toString(), status: ConnectionStatus.disconnected));
+      if (ssid.contains("WAVE")) results.add(ScanDevice(deviceName: ssid, macAddress: ssid, rssi: rssi.toString()));
     }
+
+    _removeDuplicateSsid(results);
 
     // 할당된 메모리 해제 및 COM 비활성화
     _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, pInterfaceGuid, ppAvailableNetworkList);
@@ -136,13 +133,21 @@ class WifiScanner {
     return results;
   }
 
+  void _removeDuplicateSsid(List<ScanDevice> results) {
+    var distinctResults =
+        groupBy(results, (ScanDevice device) => device.deviceName).values.map((devices) => devices.first).toList();
+
+    results.clear();
+    results.addAll(distinctResults);
+  }
+
   void _freeResources(
-      Pointer<HANDLE>? hClientHandle,
-      Pointer<DWORD>? pdwNegotiatedVersion,
-      Pointer<Pointer<WLAN_INTERFACE_INFO_LIST>>? ppInterfaceList,
-      Pointer<GUID>? pInterfaceGuid,
-      Pointer<Pointer<WLAN_AVAILABLE_NETWORK_LIST>>? ppAvailableNetworkList,
-      ) {
+    Pointer<HANDLE>? hClientHandle,
+    Pointer<DWORD>? pdwNegotiatedVersion,
+    Pointer<Pointer<WLAN_INTERFACE_INFO_LIST>>? ppInterfaceList,
+    Pointer<GUID>? pInterfaceGuid,
+    Pointer<Pointer<WLAN_AVAILABLE_NETWORK_LIST>>? ppAvailableNetworkList,
+  ) {
     if (ppAvailableNetworkList != null) {
       WlanFreeMemory(ppAvailableNetworkList.value);
       free(ppAvailableNetworkList);

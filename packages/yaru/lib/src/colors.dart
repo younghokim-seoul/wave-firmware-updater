@@ -57,7 +57,7 @@ class YaruColors {
   /// being legible.
   ///
   /// Cool grey can also be used within charts and diagrams.
-  static const Color coolGrey = Color(0xFF333333);
+  static const Color coolGrey = Color(0xFF4D4D4D);
 
   /// Text Grey
   ///
@@ -158,6 +158,8 @@ class YaruColors {
 
   /// Xubuntu Blue
   static const Color xubuntuBlue = Color(0xFF0044AA);
+
+  static const Color greyColor = Color(0xFF757883);
 }
 
 /// Set of useful methods when working with [Color]

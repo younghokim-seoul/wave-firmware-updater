@@ -72,9 +72,6 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                   ),
                 ),
                 Gap(38),
-                BounceGray(child:  Assets.icons.iconWavetoolsConnection.image(width: 100), onTap: (){
-                  Log.d('Connection Start');
-                }),
               ],
             )
           ],

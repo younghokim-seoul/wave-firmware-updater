@@ -19,7 +19,6 @@ mixin _$ScanDevice {
   String get deviceName => throw _privateConstructorUsedError;
   String get macAddress => throw _privateConstructorUsedError;
   String get rssi => throw _privateConstructorUsedError;
-  ConnectionStatus get status => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ScanDeviceCopyWith<ScanDevice> get copyWith =>
@@ -32,11 +31,7 @@ abstract class $ScanDeviceCopyWith<$Res> {
           ScanDevice value, $Res Function(ScanDevice) then) =
       _$ScanDeviceCopyWithImpl<$Res, ScanDevice>;
   @useResult
-  $Res call(
-      {String deviceName,
-      String macAddress,
-      String rssi,
-      ConnectionStatus status});
+  $Res call({String deviceName, String macAddress, String rssi});
 }
 
 /// @nodoc
@@ -55,7 +50,6 @@ class _$ScanDeviceCopyWithImpl<$Res, $Val extends ScanDevice>
     Object? deviceName = null,
     Object? macAddress = null,
     Object? rssi = null,
-    Object? status = null,
   }) {
     return _then(_value.copyWith(
       deviceName: null == deviceName
@@ -70,10 +64,6 @@ class _$ScanDeviceCopyWithImpl<$Res, $Val extends ScanDevice>
           ? _value.rssi
           : rssi // ignore: cast_nullable_to_non_nullable
               as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as ConnectionStatus,
     ) as $Val);
   }
 }
@@ -86,11 +76,7 @@ abstract class _$$ScanDeviceImplCopyWith<$Res>
       __$$ScanDeviceImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String deviceName,
-      String macAddress,
-      String rssi,
-      ConnectionStatus status});
+  $Res call({String deviceName, String macAddress, String rssi});
 }
 
 /// @nodoc
@@ -107,7 +93,6 @@ class __$$ScanDeviceImplCopyWithImpl<$Res>
     Object? deviceName = null,
     Object? macAddress = null,
     Object? rssi = null,
-    Object? status = null,
   }) {
     return _then(_$ScanDeviceImpl(
       deviceName: null == deviceName
@@ -122,10 +107,6 @@ class __$$ScanDeviceImplCopyWithImpl<$Res>
           ? _value.rssi
           : rssi // ignore: cast_nullable_to_non_nullable
               as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as ConnectionStatus,
     ));
   }
 }
@@ -134,10 +115,7 @@ class __$$ScanDeviceImplCopyWithImpl<$Res>
 
 class _$ScanDeviceImpl implements _ScanDevice {
   const _$ScanDeviceImpl(
-      {required this.deviceName,
-      required this.macAddress,
-      required this.rssi,
-      required this.status});
+      {required this.deviceName, required this.macAddress, required this.rssi});
 
   @override
   final String deviceName;
@@ -145,12 +123,10 @@ class _$ScanDeviceImpl implements _ScanDevice {
   final String macAddress;
   @override
   final String rssi;
-  @override
-  final ConnectionStatus status;
 
   @override
   String toString() {
-    return 'ScanDevice(deviceName: $deviceName, macAddress: $macAddress, rssi: $rssi, status: $status)';
+    return 'ScanDevice(deviceName: $deviceName, macAddress: $macAddress, rssi: $rssi)';
   }
 
   @override
@@ -162,13 +138,11 @@ class _$ScanDeviceImpl implements _ScanDevice {
                 other.deviceName == deviceName) &&
             (identical(other.macAddress, macAddress) ||
                 other.macAddress == macAddress) &&
-            (identical(other.rssi, rssi) || other.rssi == rssi) &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.rssi, rssi) || other.rssi == rssi));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, deviceName, macAddress, rssi, status);
+  int get hashCode => Object.hash(runtimeType, deviceName, macAddress, rssi);
 
   @JsonKey(ignore: true)
   @override
@@ -181,8 +155,7 @@ abstract class _ScanDevice implements ScanDevice {
   const factory _ScanDevice(
       {required final String deviceName,
       required final String macAddress,
-      required final String rssi,
-      required final ConnectionStatus status}) = _$ScanDeviceImpl;
+      required final String rssi}) = _$ScanDeviceImpl;
 
   @override
   String get deviceName;
@@ -190,8 +163,6 @@ abstract class _ScanDevice implements ScanDevice {
   String get macAddress;
   @override
   String get rssi;
-  @override
-  ConnectionStatus get status;
   @override
   @JsonKey(ignore: true)
   _$$ScanDeviceImplCopyWith<_$ScanDeviceImpl> get copyWith =>
