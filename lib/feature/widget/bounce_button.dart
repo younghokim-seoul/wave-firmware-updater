@@ -9,8 +9,8 @@ class BounceGray extends StatefulWidget {
     required this.child,
     required this.onTap,
     this.scale = 0.95,
-    this.paddingHorizontal = 20,
-    this.paddingVertical = 15,
+    this.paddingHorizontal = 0,
+    this.paddingVertical = 0,
   });
 
   final Widget? child;

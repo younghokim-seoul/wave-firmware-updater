@@ -22,6 +22,18 @@ class $AssetsFontsGen {
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  /// File path: assets/icons/Btn_FirmwareUpdate_Complete.png
+  AssetGenImage get btnFirmwareUpdateComplete =>
+      const AssetGenImage('assets/icons/Btn_FirmwareUpdate_Complete.png');
+
+  /// File path: assets/icons/Btn_FirmwareUpdate_Downloading.png
+  AssetGenImage get btnFirmwareUpdateDownloading =>
+      const AssetGenImage('assets/icons/Btn_FirmwareUpdate_Downloading.png');
+
+  /// File path: assets/icons/Btn_FirmwareUpdate_Start.png
+  AssetGenImage get btnFirmwareUpdateStart =>
+      const AssetGenImage('assets/icons/Btn_FirmwareUpdate_Start.png');
+
   /// File path: assets/icons/Icon_bluetooth_disable.png
   AssetGenImage get iconBluetoothDisable =>
       const AssetGenImage('assets/icons/Icon_bluetooth_disable.png');
@@ -52,6 +64,9 @@ class $AssetsIconsGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
+        btnFirmwareUpdateComplete,
+        btnFirmwareUpdateDownloading,
+        btnFirmwareUpdateStart,
         iconBluetoothDisable,
         iconBluetoothEnable,
         iconWave,

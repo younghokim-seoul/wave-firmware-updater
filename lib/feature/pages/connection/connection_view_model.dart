@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/data/repository/connection_status.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
+import 'package:wave_desktop_installer/domain/model/scan_device.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
@@ -28,9 +29,13 @@ class ConnectionViewModel {
     _scanSubscription ??= _wifiRepository.scanMessage.listen((response) {
       final state = response
           .map((e) => ScanUiModel(
-              connectionMode: _connectionMode, model: e, isExpanded: false, status: ConnectionStatus.disconnected))
+              connectionMode: _connectionMode,
+              model: e,
+              isExpanded: false,
+              status: ConnectionStatus.disconnected))
           .toList();
-      connectionUiState.val = NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
+      connectionUiState.val =
+          NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
     });
   }
 
@@ -49,6 +54,39 @@ class ConnectionViewModel {
       } else {}
     } catch (e, t) {
       Log.e('[startScan Error] $e');
+
+      List<ScanUiModel> dummyScanUiModels = [
+        const ScanUiModel(
+            connectionMode: ConnectionMode.wifi,
+            // 더미 데이터
+            model: ScanDevice(
+                deviceName: "mode1", macAddress: "macAddress", rssi: "rssi"),
+            // 더미 데이터
+            isExpanded: false,
+            status: ConnectionStatus.disconnected),
+        const ScanUiModel(
+            connectionMode: ConnectionMode.wifi,
+            // 더미 데이터
+            model: ScanDevice(
+                deviceName: "mode3",
+                macAddress: "asdsadasd",
+                rssi: "asdasdasd"),
+            // 데이터
+            isExpanded: false,
+            status: ConnectionStatus.disconnected),
+        const ScanUiModel(
+            connectionMode: ConnectionMode.bluetooth,
+            // 더미 데이터
+            model: ScanDevice(
+                deviceName: "mode4",
+                macAddress: "asdsdgggggggg",
+                rssi: "1231231231231"),
+            // 더미 데이터
+            isExpanded: false,
+            status: ConnectionStatus.disconnected),
+      ];
+      connectionUiState.val = NearByDevicesUpdate(
+          data: ConnectionUiState(scanDevices: dummyScanUiModels));
     }
   }
 
@@ -70,20 +108,48 @@ class ConnectionViewModel {
     }
   }
 
-  void expandStateUpdate(ScanUiModel item) {
+  void expandStateUpdate(ScanUiModel item, bool isExpanded) {
     if (connectionUiState.val is NearByDevicesUpdate) {
       NearByDevicesUpdate model = connectionUiState.val;
-      final state = model.data.scanDevices.map((e) {
-        if (e.model == item.model) {
-          return e = item;
-        } else {
-          return e.copyWith(isExpanded: false);
-        }
-      }).toList();
 
-      if (!state.isNullOrEmpty) {
-        connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: state));
-      }
+      final updateScanDevices = isExpanded
+          ? model.data.scanDevices.map((e) {
+              if (e == item) {
+                return e.copyWith(isExpanded: true);
+              } else {
+                return e.copyWith(isExpanded: false);
+              }
+            }).toList()
+          : model.data.scanDevices.map((e) {
+              if (e == item) {
+                return e.copyWith(isExpanded: false);
+              } else {
+                return e;
+              }
+            }).toList();
+
+      connectionUiState.val = NearByDevicesUpdate(
+          data: model.data.copyWith(scanDevices: updateScanDevices));
+
+      // if (isExpanded) {
+      //   int index = model.data.scanDevices.indexWhere((element) => element == item);
+      //   List<ScanUiModel> mutableScanDevices = List.from(model.data.scanDevices);
+      //   for (int i = 0; i < mutableScanDevices.length; i++) {
+      //     if (i == index) {
+      //       mutableScanDevices[i] = model.data.scanDevices[i].copyWith(isExpanded: true);
+      //     } else {
+      //       mutableScanDevices[i] = model.data.scanDevices[i].copyWith(isExpanded: false);
+      //     }
+      //   }
+      //   connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
+      // } else {
+      //   int index = model.data.scanDevices.indexWhere((element) => element == item);
+      //   List<ScanUiModel> mutableScanDevices = List.from(model.data.scanDevices);
+      //   mutableScanDevices[index] = mutableScanDevices[index].copyWith(isExpanded: false);
+      //
+      //   connectionUiState.val = NearByDevicesUpdate(
+      //       data: model.data.copyWith(scanDevices: mutableScanDevices));
+      // }
 
     }
   }

@@ -4,7 +4,7 @@ import 'package:yaru/theme.dart';
 
 const double _kScrollbarThickness = 8.0;
 const double _kScrollbarMargin = 2.0;
-const Duration _kSelectedTileAnimationDuration = Duration(milliseconds: 500);
+const Duration _kSelectedTileAnimationDuration = Duration(milliseconds: 250);
 const double _kItemHeight = 106.0;
 
 /// Provides the recommended layout for [YaruMasterDetailPage.tileBuilder].

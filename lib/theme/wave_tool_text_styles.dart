@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:yaru/yaru.dart';
 
-
 abstract class WaveTextStyles {
-
-
   static const fontFamily = 'NotoSansKR';
 
   static TextTheme get textTheme => const TextTheme(
-    labelLarge: buttonLarge,
-    titleMedium: subtitle1,
-    titleSmall: listTitle1,
-    labelSmall: overline,
-    bodyLarge: body1,
-    bodyMedium: body2,
-    bodySmall: caption,
-  );
+        labelLarge: buttonLarge,
+        titleMedium: subtitle1,
+        titleSmall: listTitle1,
+        labelSmall: overline,
+        bodyLarge: body1,
+        bodyMedium: body2,
+        bodySmall: caption,
+      );
 
   static const TextStyle headline4 = TextStyle(
     fontFamily: fontFamily,
@@ -97,7 +94,8 @@ abstract class WaveTextStyles {
     fontWeight: FontWeight.w400,
     fontSize: 17,
     letterSpacing: 0.09,
-    color: Colors.white
+    color: Colors.white,
+    height: 1.4,
   );
 
   static const TextStyle body1Bold = TextStyle(
