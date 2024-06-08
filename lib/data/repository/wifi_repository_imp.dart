@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:control_protocol/control_protocol.dart';
 import 'package:injectable/injectable.dart';
 import 'package:tcp_client/tcp_client.dart';
-import 'package:wave_desktop_installer/data/repository/connection_exception.dart';
-import 'package:wave_desktop_installer/data/repository/wifi_scanner.dart';
+import 'package:wave_desktop_installer/data/exception/connection_exception.dart';
+import 'package:wave_desktop_installer/data/wifi_scanner.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
@@ -36,11 +36,11 @@ class WifiRepositoryImp extends WifiRepository {
   Future<void> connect(String address, int port) async {
     Log.d("Connecting to $address:$port...");
     try {
-      if (_clientRepository.isConnected) {
-        Log.d("Already connected to $address:$port. so block....");
-        return;
-      }
 
+      // if (_clientRepository.isConnected) {
+      //   Log.d("Already connected to $address:$port. so block....");
+      //   return;
+      // }
       final response = await _clientRepository.connect();
 
       Log.d("Connected to $address:$port. Response: $response");
@@ -55,7 +55,6 @@ class WifiRepositoryImp extends WifiRepository {
             if (_subscription == null) {
               return;
             }
-
             try {
               await send(PingDataRequest().getRawBytes());
             } catch (e) {

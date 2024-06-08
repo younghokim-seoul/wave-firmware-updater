@@ -1,9 +1,12 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tcp_client/tcp_client.dart';
-import 'package:wave_desktop_installer/data/repository/wifi_scanner.dart';
-
+import 'package:wave_desktop_installer/data/network/api_client.dart';
+import 'package:wave_desktop_installer/data/network/api_service.dart';
+import 'package:wave_desktop_installer/utils/constant.dart';
 
 import 'configurations.config.dart' as config;
 
@@ -21,10 +24,20 @@ Future<void> $initGetIt(
   String? environment,
   EnvironmentFilter? environmentFilter,
 }) async {
+
   final gh = GetItHelper(getIt, environment.toString());
+
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  gh.lazySingleton<TcpClientRepository>(() => TcpClientRepository('192.168.8.1', serverPort: 4999));
-  gh.lazySingleton<WifiScanner>(() => WifiScanner());
+  var baseApiClient = ApiClient(enableLogging: !kReleaseMode);
+
+  gh.factory<Dio>(() => baseApiClient.apiProvider.getDio);
+
+  gh.factory<ApiService>(() => ApiService(getIt<Dio>()));
+
+  gh.lazySingleton<TcpClientRepository>(
+    () => TcpClientRepository(Const.waveIp, serverPort: Const.wavePort),
+    dispose: (TcpClientRepository repo) => repo.disconnect(),
+  );
   config.$initGetIt(getIt);
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
+import 'package:wave_desktop_installer/di/configurations.dart';
+import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/bounce_button.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
@@ -16,6 +18,8 @@ class FirmwareUpdatePage extends ConsumerStatefulWidget {
 }
 
 class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
+  final _viewModel = getIt<FirmwareUpdateViewModel>();
+
   @override
   void initState() {
     Log.d("FirmwareUpdatePage initState!!");
@@ -42,7 +46,9 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
             Column(
               children: [
                 BounceGray(
-                  onTap: () {},
+                  onTap: () {
+                    _viewModel.checkFirmwareUpdate();
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 25),
                     decoration: BoxDecoration(

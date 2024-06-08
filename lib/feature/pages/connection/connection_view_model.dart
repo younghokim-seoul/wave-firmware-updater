@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:injectable/injectable.dart';
-import 'package:wave_desktop_installer/data/repository/connection_status.dart';
+import 'package:wave_desktop_installer/data/connection_status.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
@@ -9,7 +9,6 @@ import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_state.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
-import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
 
 @injectable
@@ -150,7 +149,6 @@ class ConnectionViewModel {
       //   connectionUiState.val = NearByDevicesUpdate(
       //       data: model.data.copyWith(scanDevices: mutableScanDevices));
       // }
-
     }
   }
 }

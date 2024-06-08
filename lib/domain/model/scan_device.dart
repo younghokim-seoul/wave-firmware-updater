@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:wave_desktop_installer/data/repository/connection_status.dart';
+
 
 part 'scan_device.freezed.dart';
 

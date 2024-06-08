@@ -5,6 +5,11 @@ class Const {
   static bool useProxy = false;
   static String proxyAddress = '192.168.206.119:8888';
 
-  static const String wave_ip = '192.168.8.1';
-  static const int wave_port = 4999;
+  static const String waveIp = '192.168.8.1';
+  static const int wavePort = 4999;
+
+  static const String baseUrl = 'https://skills.golfzonwave.com';
+  static const String publicApi = '/common/json';
+
+  static const String waveOsCode = 'G_RADAR_MINI';
 }
