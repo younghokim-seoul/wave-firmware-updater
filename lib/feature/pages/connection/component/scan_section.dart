@@ -7,6 +7,9 @@ import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:yaru/theme.dart';
 
+final connectionModeProvider = StateProvider<ConnectionMode>((ref) => ConnectionMode.wifi);
+
+
 class ScanSection extends ConsumerWidget {
   const ScanSection({super.key, required this.connectionViewModel});
 
@@ -74,6 +77,7 @@ class ScanSection extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       onValueChanged: (v) {
         Log.d("Selected $v");
+        ref.watch(connectionModeProvider.notifier).state = v;
         connectionViewModel.startScan(v);
       },
     );

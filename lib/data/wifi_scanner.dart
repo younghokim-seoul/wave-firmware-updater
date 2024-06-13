@@ -5,6 +5,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
+import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:win32/win32.dart';
 
 typedef WifiSearchEventCallback = void Function(String ssid, String rssi);
@@ -15,6 +16,10 @@ class WifiScanner {
     return await compute(scanNetworks, null);
   }
 
+  void connectWifi() {
+
+  }
+
   List<ScanDevice> scanNetworks(_) {
     final List<ScanDevice> results = [];
 
@@ -22,6 +27,7 @@ class WifiScanner {
     if (FAILED(hr)) {
       throw Exception('Failed to initialize COM library. Error code: $hr');
     }
+
 
     // WLAN 클라이언트 핸들 열기
     final hClientHandle = calloc<HANDLE>();
@@ -32,8 +38,7 @@ class WifiScanner {
       throw Exception('Memory allocation failed.');
     }
 
-    final dwResult =
-        WlanOpenHandle(2, nullptr, pdwNegotiatedVersion, hClientHandle);
+    final dwResult = WlanOpenHandle(2, nullptr, pdwNegotiatedVersion, hClientHandle);
     if (dwResult != WIN32_ERROR.ERROR_SUCCESS) {
       _freeResources(hClientHandle, pdwNegotiatedVersion, null, null, null);
       CoUninitialize();
@@ -48,19 +53,16 @@ class WifiScanner {
       throw Exception('Memory allocation failed.');
     }
 
-    final dwResultEnum =
-        WlanEnumInterfaces(hClientHandle.value, nullptr, ppInterfaceList);
+    final dwResultEnum = WlanEnumInterfaces(hClientHandle.value, nullptr, ppInterfaceList);
     if (dwResultEnum != WIN32_ERROR.ERROR_SUCCESS) {
-      _freeResources(
-          hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
       CoUninitialize();
       throw Exception('WlanEnumInterfaces failed with error: $dwResultEnum');
     }
 
     final interfaceList = ppInterfaceList.value.ref;
     if (interfaceList.dwNumberOfItems == 0) {
-      _freeResources(
-          hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
       CoUninitialize();
       throw Exception('No WLAN interfaces found.');
     }
@@ -69,8 +71,7 @@ class WifiScanner {
     final interfaceInfo = interfaceList.InterfaceInfo[0];
     final pInterfaceGuid = calloc<GUID>();
     if (pInterfaceGuid == nullptr) {
-      _freeResources(
-          hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, null, null);
       CoUninitialize();
       throw Exception('Memory allocation failed.');
     }
@@ -82,21 +83,17 @@ class WifiScanner {
       interfaceInfo.InterfaceGuid.Data4,
     );
 
-    final dwResultScan = WlanScan(
-        hClientHandle.value, pInterfaceGuid, nullptr, nullptr, nullptr);
+    final dwResultScan = WlanScan(hClientHandle.value, pInterfaceGuid, nullptr, nullptr, nullptr);
     if (dwResultScan != WIN32_ERROR.ERROR_SUCCESS) {
-      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList,
-          pInterfaceGuid, null);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, pInterfaceGuid, null);
       CoUninitialize();
       throw Exception('WlanScan failed with error: $dwResultScan');
     }
 
     // 가용 네트워크 목록 가져오기
-    final ppAvailableNetworkList =
-        calloc<Pointer<WLAN_AVAILABLE_NETWORK_LIST>>();
+    final ppAvailableNetworkList = calloc<Pointer<WLAN_AVAILABLE_NETWORK_LIST>>();
     if (ppAvailableNetworkList == nullptr) {
-      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList,
-          pInterfaceGuid, null);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, pInterfaceGuid, null);
       CoUninitialize();
       throw Exception('Memory allocation failed.');
     }
@@ -109,49 +106,54 @@ class WifiScanner {
       ppAvailableNetworkList,
     );
     if (dwResultGetNetworkList != WIN32_ERROR.ERROR_SUCCESS) {
-      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList,
-          pInterfaceGuid, ppAvailableNetworkList);
+      _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, pInterfaceGuid, ppAvailableNetworkList);
       CoUninitialize();
-      throw Exception(
-          'WlanGetAvailableNetworkList failed with error: $dwResultGetNetworkList');
+      throw Exception('WlanGetAvailableNetworkList failed with error: $dwResultGetNetworkList');
     }
 
     final availableNetworkList = ppAvailableNetworkList.value.ref;
     final numberOfItems = availableNetworkList.dwNumberOfItems;
 
+
+    Log.d(':::Wifi available Size ::: $numberOfItems');
+
     for (int i = 0; i < numberOfItems; i++) {
       // 가변 길이 배열 접근
-      final networkAddress = ppAvailableNetworkList.value.address +
-          sizeOf<WLAN_AVAILABLE_NETWORK_LIST>() +
-          i * sizeOf<WLAN_AVAILABLE_NETWORK>();
-      final network =
-          Pointer<WLAN_AVAILABLE_NETWORK>.fromAddress(networkAddress).ref;
 
-      // SSID를 출력
-      final ssid = network.dot11Ssid.toRawString();
-      final rssi = network.wlanSignalQuality;
+      try{
+        final networkAddress = ppAvailableNetworkList.value.address +
+            sizeOf<WLAN_AVAILABLE_NETWORK_LIST>() +
+            i * sizeOf<WLAN_AVAILABLE_NETWORK>();
+        final networkPtr = Pointer<WLAN_AVAILABLE_NETWORK>.fromAddress(networkAddress);
+        final network = networkPtr.ref;
+        print(" SSID LENGTH : ${network.dot11Ssid.uSSIDLength}");
+        if(network.dot11Ssid.uSSIDLength == 13){
+          final ssid = network.dot11Ssid.toRawString();
+          final rssi = network.wlanSignalQuality;
 
-      if (ssid.contains("WAVE"))
-        results.add(ScanDevice(
-            deviceName: ssid, macAddress: ssid, rssi: rssi.toString()));
+          Log.i("SSID: $ssid, RSSI: $rssi");
+
+          if (ssid.contains("WAVE")) {
+            results.add(ScanDevice(deviceName: ssid, macAddress: ssid, rssi: rssi.toString()));
+          }
+        }
+      }catch(e){
+        Log.e("Wifi array Exception");
+        continue;
+      }
     }
 
     _removeDuplicateSsid(results);
 
     // 할당된 메모리 해제 및 COM 비활성화
-    _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList,
-        pInterfaceGuid, ppAvailableNetworkList);
+    _freeResources(hClientHandle, pdwNegotiatedVersion, ppInterfaceList, pInterfaceGuid, ppAvailableNetworkList);
     CoUninitialize();
 
     return results;
   }
 
   void _removeDuplicateSsid(List<ScanDevice> results) {
-    var distinctResults =
-        groupBy(results, (ScanDevice device) => device.deviceName)
-            .values
-            .map((devices) => devices.first)
-            .toList();
+    var distinctResults = groupBy(results, (ScanDevice device) => device.deviceName).values.map((devices) => devices.first).toList();
 
     results.clear();
     results.addAll(distinctResults);
@@ -191,4 +193,8 @@ extension on DOT11_SSID {
       List<int>.generate(uSSIDLength, (index) => ucSSID[index]),
     ));
   }
+}
+
+String _asciiToHex(String asciiString) {
+  return asciiString.codeUnits.map((char) => char.toRadixString(16).padLeft(2, '0')).join();
 }

@@ -4,7 +4,6 @@ import 'package:wave_desktop_installer/feature/pages/connection/component/device
 import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
-import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 
@@ -32,11 +31,12 @@ class WifiListView extends ConsumerWidget {
           itemBuilder: (context, index) {
             final item = event.data.scanDevices[index];
             return DeviceSection(
+              key: ValueKey(item.model.deviceName),
               item: item,
               onExpandedChanged: (item, isExpanded) =>
                   connectionViewModel.expandStateUpdate(item, isExpanded),
-              onConnectionRequest: (status) {
-
+              onConnectionRequest: (item,status) {
+                  connectionViewModel.connectWifi(item,status);
               }
             ).paddingOnly(bottom: 4);
           },

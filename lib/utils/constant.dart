@@ -12,4 +12,8 @@ class Const {
   static const String publicApi = '/common/json';
 
   static const String waveOsCode = 'G_RADAR_MINI';
+
+  static const int ftpPort = 3999;
+  static const String ftpUser = 'upgrade';
+  static const String ftpPass = 'gradar';
 }

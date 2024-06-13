@@ -102,6 +102,7 @@ class YaruColors {
   static const Color titleTextLight = Color(0xFFD3D7DC);
   static const Color titleVersionLight = Color(0xFF9DB8F0);
 
+  static const Color commentTextLight = Color(0xff3F424F);
   /// Link
   final Color link;
 
@@ -124,7 +125,7 @@ class YaruColors {
   static const Color purple = Color(0xFF7764D8);
 
   /// Red
-  static const Color red = Color(0xFFDA3450);
+  static const Color red = Color(0xFFFA4238);
 
   /// Blue
   static const Color blue = Color(0xFF086FB8);

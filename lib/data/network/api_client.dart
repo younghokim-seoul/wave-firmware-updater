@@ -5,6 +5,6 @@ class ApiClient {
   late final ApiProviderFactory apiProvider;
 
   ApiClient({required this.enableLogging}) {
-    apiProvider = ApiProviderFactory(enableLogging);
+    apiProvider = ApiProviderFactory(false);
   }
 }

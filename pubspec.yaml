@@ -20,6 +20,8 @@ dependencies:
     path: packages/tcp_client
   yaru:
     path: packages/yaru
+  ftp_connect:
+    path: packages/ftp_connect
 
 
   injectable: ^2.3.2
@@ -45,6 +47,7 @@ dependencies:
   webview_windows: ^0.4.0
   window_manager: ^0.3.9
   percent_indicator: ^4.2.3
+  animated_text_kit: ^4.2.2
 
   win32: ^5.5.1
   ffi: ^2.1.2

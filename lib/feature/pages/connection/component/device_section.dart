@@ -29,7 +29,7 @@ class DeviceSection extends ConsumerStatefulWidget {
 
   final ScanUiModel item;
   final Function(ScanUiModel, bool) onExpandedChanged;
-  final Function(ConnectionStatus) onConnectionRequest;
+  final Function(ScanUiModel,ConnectionStatus) onConnectionRequest;
 
   @override
   ConsumerState createState() => _DeviceSectionState();
@@ -172,7 +172,7 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
                 textAlign: TextAlign.center,
               ).paddingSymmetric(vertical: 8),
             ),
-            onTap: () => widget.onConnectionRequest.call(widget.item.status),
+            onTap: () => widget.onConnectionRequest.call(widget.item,widget.item.status),
           )
         ],
       ).paddingSymmetric(vertical: 10, horizontal: 12),

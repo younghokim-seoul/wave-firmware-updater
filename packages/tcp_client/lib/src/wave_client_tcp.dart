@@ -38,6 +38,8 @@ class TcpClientRepository extends ModbusClient {
 
   Socket? _socket;
 
+  late StreamSubscription _subs;
+
   bool get isClosed => _socket == null;
 
   TcpClientRepository(this.serverAddress,
@@ -81,7 +83,7 @@ class TcpClientRepository extends ModbusClient {
       print("Already connected to $serverAddress:$serverPort");
       return true;
     }
-    print("Connecting TCP socket...");
+    print('Connecting TCP socket...$serverAddress:$serverPort');
     // New connection
     try {
       // listen to the received data event stream
@@ -93,7 +95,7 @@ class TcpClientRepository extends ModbusClient {
           _socket = await Socket.connect(serverAddress, serverPort, timeout: connectionTimeout);
           break;
         } catch (Exception) {
-          print(k.toString() + " attempt: Socket not connected (Timeout reached)");
+          print("$k attempt: Socket not connected (Timeout reached)");
           if (k == attempts) {
             return false;
           }
@@ -101,9 +103,11 @@ class TcpClientRepository extends ModbusClient {
         k++;
       }
 
-      _socket!.listen((Uint8List data) {
+      _subs = _socket!.listen((Uint8List data) {
         _onSocketData(data);
-      }, onError: (error) => _onSocketError(error), onDone: () {
+      }, onError: (error) {
+        _onSocketError(error);
+      }, onDone: () {
         disconnect();
         print("TCP socket closed");
       }, cancelOnError: true);
@@ -135,28 +139,32 @@ class TcpClientRepository extends ModbusClient {
 
   /// Handle an error from the socket
   void _onSocketError(dynamic error) {
-    print("Unexpected error from TCP socket" + error);
+    print("Unexpected error from TCP socket$error");
     disconnect();
   }
 
   /// Handle socket being closed
   @override
   Future<void> disconnect() async {
-    print("Disconnecting TCP socket...");
+    print("Disconnecting TCP socket... ");
     if (_socket != null) {
-      _socket!.destroy();
+      _socket!.close();
       _socket = null;
     }
+    await _subs.cancel();
   }
 
-  Future<WaveSensorResponse> rawPacket(Uint8List event) async {
+  Future<WaveSensorResponse> rawPacket(Uint8List event, {bool isAutoConnect = false}) async {
     final completer = Completer<WaveSensorResponse>();
 
     _requestQueue.add(() async {
       // Connect if needed
       try {
         if (connectionMode != ModbusConnectionMode.doNotConnect) {
-          await connect();
+          // await connect();
+          if(isAutoConnect) {
+            await connect();
+          }
         }
         if (!isConnected) {
           throw TcpClientException('Message was not sent', StackTrace.current);
@@ -168,7 +176,9 @@ class TcpClientRepository extends ModbusClient {
 
         // Create the new response handler
         var transactionId = _getNextTransactionId();
-        print("transactionId $transactionId | ${utf8.decode(event)}");
+
+        String timestamp = '[${DateTime.now().toString()}] ';
+        print("$timestamp transactionId $transactionId | ${utf8.decode(event)}");
         final response = await _responseCompleter.future.timeout(connectionTimeout);
         completer.complete(response);
       } on ResponseParseException catch (e) {

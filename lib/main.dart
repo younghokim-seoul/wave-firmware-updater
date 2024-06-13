@@ -21,21 +21,21 @@ void main() async {
   await windowManager.ensureInitialized();
   await configureDependencies();
 
-  settingWindow();
+  await settingWindow();
 
   runApp(const ProviderScope(child: StoreApp()));
 }
 
-void settingWindow() {
+Future<void> settingWindow() async {
   WindowOptions windowOptions = const WindowOptions(
     size: Size(1140, 880),
     minimumSize: Size(1140, 880), // Add this line
     maximumSize: Size(1140, 880), // Add this line
     center: true,
   );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-  });
+
+  await windowManager.waitUntilReadyToShow(windowOptions);
+
 }
 
 class StoreApp extends ConsumerStatefulWidget {

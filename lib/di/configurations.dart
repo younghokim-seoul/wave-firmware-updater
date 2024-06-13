@@ -7,6 +7,7 @@ import 'package:tcp_client/tcp_client.dart';
 import 'package:wave_desktop_installer/data/network/api_client.dart';
 import 'package:wave_desktop_installer/data/network/api_service.dart';
 import 'package:wave_desktop_installer/utils/constant.dart';
+import 'package:wave_desktop_installer/utils/dev_log.dart';
 
 import 'configurations.config.dart' as config;
 
@@ -37,7 +38,10 @@ Future<void> $initGetIt(
 
   gh.lazySingleton<TcpClientRepository>(
     () => TcpClientRepository(Const.waveIp, serverPort: Const.wavePort),
-    dispose: (TcpClientRepository repo) => repo.disconnect(),
+    dispose: (TcpClientRepository repo) {
+      Log.d('TcpClientRepository Dispose');
+      repo.disconnect();
+    },
   );
   config.$initGetIt(getIt);
 }

@@ -25,17 +25,31 @@ class ConnectionViewModel {
   ConnectionMode _connectionMode = ConnectionMode.wifi;
 
   Future<void> subscribeToMessages() async {
-    _scanSubscription ??= _wifiRepository.scanMessage.listen((response) {
-      final state = response
-          .map((e) => ScanUiModel(
-              connectionMode: _connectionMode,
-              model: e,
-              isExpanded: false,
-              status: ConnectionStatus.disconnected))
-          .toList();
-      connectionUiState.val =
-          NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
-    });
+    _scanSubscription ??= _wifiRepository.scanMessage.listen(
+      (response) {
+        final address = _wifiRepository.getAddressFromDevice;
+
+        final state = response
+            .map(
+              (e) => ScanUiModel(
+                connectionMode: _connectionMode,
+                model: e,
+                isExpanded: e.macAddress == address ? true : false,
+                status: e.macAddress == address ? ConnectionStatus.connected : ConnectionStatus.disconnected,
+              ),
+            )
+            .toList();
+
+        int connectedIndex = state.indexWhere((item) => item.status == ConnectionStatus.connected);
+
+        if (connectedIndex != -1) {
+          ScanUiModel connectedItem = state.removeAt(connectedIndex);
+          state.insert(0, connectedItem);
+        }
+
+        connectionUiState.val = NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
+      },
+    );
   }
 
   Future<void> dispose() async {
@@ -43,8 +57,12 @@ class ConnectionViewModel {
     _scanSubscription = null;
   }
 
+
+
   Future<void> startScan(ConnectionMode mode) async {
+    Log.i('Start Scan $mode');
     connectionUiState.val = const NearByDevicesRequested();
+    await Future.delayed(const Duration(milliseconds: 300));
     _connectionMode = mode;
     await _resetAndSubscribeToScan();
     try {
@@ -53,39 +71,6 @@ class ConnectionViewModel {
       } else {}
     } catch (e, t) {
       Log.e('[startScan Error] $e');
-
-      List<ScanUiModel> dummyScanUiModels = [
-        const ScanUiModel(
-            connectionMode: ConnectionMode.wifi,
-            // 더미 데이터
-            model: ScanDevice(
-                deviceName: "mode1", macAddress: "macAddress", rssi: "rssi"),
-            // 더미 데이터
-            isExpanded: false,
-            status: ConnectionStatus.disconnected),
-        const ScanUiModel(
-            connectionMode: ConnectionMode.wifi,
-            // 더미 데이터
-            model: ScanDevice(
-                deviceName: "mode3",
-                macAddress: "asdsadasd",
-                rssi: "asdasdasd"),
-            // 데이터
-            isExpanded: false,
-            status: ConnectionStatus.disconnected),
-        const ScanUiModel(
-            connectionMode: ConnectionMode.bluetooth,
-            // 더미 데이터
-            model: ScanDevice(
-                deviceName: "mode4",
-                macAddress: "asdsdgggggggg",
-                rssi: "1231231231231"),
-            // 더미 데이터
-            isExpanded: false,
-            status: ConnectionStatus.disconnected),
-      ];
-      connectionUiState.val = NearByDevicesUpdate(
-          data: ConnectionUiState(scanDevices: dummyScanUiModels));
     }
   }
 
@@ -99,11 +84,35 @@ class ConnectionViewModel {
     await _wifiRepository.stopScan();
   }
 
-  Future<void> connectWifi(String address, int port) async {
-    try {
-      await _wifiRepository.connect(address, port);
-    } catch (e, t) {
-      Log.e("Wifi connection failed $e");
+  Future<void> connectWifi(ScanUiModel item, ConnectionStatus status) async {
+    if (connectionUiState.val is NearByDevicesUpdate) {
+      NearByDevicesUpdate model = connectionUiState.val;
+
+      int index = model.data.scanDevices.indexWhere((element) => element == item);
+      List<ScanUiModel> mutableScanDevices = List.from(model.data.scanDevices);
+
+      try {
+        String ssid = item.model.macAddress;
+
+        Log.d('Connecting to $ssid');
+
+        if (status == ConnectionStatus.disconnected) {
+          mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.connecting);
+          connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
+          final response = await _wifiRepository.connect(item.model.macAddress);
+          mutableScanDevices[index] = mutableScanDevices[index]
+              .copyWith(status: response ? ConnectionStatus.connected : ConnectionStatus.disconnected);
+          connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
+        } else {
+          await _wifiRepository.disconnect();
+          mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
+          connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
+        }
+      } catch (e, t) {
+        Log.e("Wifi connection failed $e");
+        mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
+        connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
+      }
     }
   }
 
@@ -127,28 +136,8 @@ class ConnectionViewModel {
               }
             }).toList();
 
-      connectionUiState.val = NearByDevicesUpdate(
-          data: model.data.copyWith(scanDevices: updateScanDevices));
-
-      // if (isExpanded) {
-      //   int index = model.data.scanDevices.indexWhere((element) => element == item);
-      //   List<ScanUiModel> mutableScanDevices = List.from(model.data.scanDevices);
-      //   for (int i = 0; i < mutableScanDevices.length; i++) {
-      //     if (i == index) {
-      //       mutableScanDevices[i] = model.data.scanDevices[i].copyWith(isExpanded: true);
-      //     } else {
-      //       mutableScanDevices[i] = model.data.scanDevices[i].copyWith(isExpanded: false);
-      //     }
-      //   }
-      //   connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
-      // } else {
-      //   int index = model.data.scanDevices.indexWhere((element) => element == item);
-      //   List<ScanUiModel> mutableScanDevices = List.from(model.data.scanDevices);
-      //   mutableScanDevices[index] = mutableScanDevices[index].copyWith(isExpanded: false);
-      //
-      //   connectionUiState.val = NearByDevicesUpdate(
-      //       data: model.data.copyWith(scanDevices: mutableScanDevices));
-      // }
+      connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: updateScanDevices));
     }
   }
+
 }

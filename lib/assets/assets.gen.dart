@@ -34,6 +34,18 @@ class $AssetsIconsGen {
   AssetGenImage get btnFirmwareUpdateStart =>
       const AssetGenImage('assets/icons/Btn_FirmwareUpdate_Start.png');
 
+  /// File path: assets/icons/Icon_WaveTools_Alert.png
+  AssetGenImage get iconWaveToolsAlert =>
+      const AssetGenImage('assets/icons/Icon_WaveTools_Alert.png');
+
+  /// File path: assets/icons/Icon_WaveTools_Refresh.png
+  AssetGenImage get iconWaveToolsRefresh =>
+      const AssetGenImage('assets/icons/Icon_WaveTools_Refresh.png');
+
+  /// File path: assets/icons/Icon_WaveTools_Scan.png
+  AssetGenImage get iconWaveToolsScan =>
+      const AssetGenImage('assets/icons/Icon_WaveTools_Scan.png');
+
   /// File path: assets/icons/Icon_bluetooth_disable.png
   AssetGenImage get iconBluetoothDisable =>
       const AssetGenImage('assets/icons/Icon_bluetooth_disable.png');
@@ -67,6 +79,9 @@ class $AssetsIconsGen {
         btnFirmwareUpdateComplete,
         btnFirmwareUpdateDownloading,
         btnFirmwareUpdateStart,
+        iconWaveToolsAlert,
+        iconWaveToolsRefresh,
+        iconWaveToolsScan,
         iconBluetoothDisable,
         iconBluetoothEnable,
         iconWave,

@@ -5,6 +5,7 @@ export 'models/ota_data_varity_req.dart';
 export 'models/ota_start_req.dart';
 export 'models/ping_data_req.dart';
 export 'models/welcome_data_req.dart';
+export 'models/reboot_data_req.dart';
 export 'models/range.dart';
 export 'parser.dart';
 export 'response.dart';
