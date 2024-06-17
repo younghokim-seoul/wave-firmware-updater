@@ -55,7 +55,7 @@ class _DeviceInfoState extends State<DeviceInfo> {
 
       print("Connect Result : $result");
 
-      if (result) {
+      if (result.state) {
         final serviceUUID = await WinBle.discoverServices(address);
         final waveUUID = serviceUUID.where((uuid) => uuid == waveServiceUuid).firstOrNull;
 
@@ -254,7 +254,7 @@ class _DeviceInfoState extends State<DeviceInfo> {
 
   disconnect(address) async {
     try {
-      await WinBle.disconnect(address);
+      await WinBle.disconnect(address,null);
       showSuccess("Disconnected");
       disconnectAndClearAllDevices();
     } catch (e) {
@@ -382,9 +382,9 @@ class _DeviceInfoState extends State<DeviceInfo> {
         // connect(device.address);
       }
       setState(() {
-        connected = event;
+        connected = event.state;
       });
-      showSuccess("Connected : $event");
+      showSuccess("Connected : $event.state");
     });
     super.initState();
   }

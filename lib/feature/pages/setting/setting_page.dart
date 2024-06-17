@@ -156,7 +156,6 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
       return const SizedBox.shrink();
     } else {
       Log.d("webview real load");
-      _animationController.forward();
       return Stack(
         children: [
           FadeTransition(
@@ -236,7 +235,8 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
                 if (snapshot.hasData && snapshot.data == LoadingState.loading) {
                   return const YaruLinearProgressIndicator(color: YaruColors.blue);
                 } else {
-                  return SizedBox.shrink();
+                  _animationController.forward();
+                  return const SizedBox.shrink();
                 }
               }),
         ],

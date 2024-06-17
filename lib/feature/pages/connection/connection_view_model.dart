@@ -25,31 +25,11 @@ class ConnectionViewModel {
   ConnectionMode _connectionMode = ConnectionMode.wifi;
 
   Future<void> subscribeToMessages() async {
-    _scanSubscription ??= _wifiRepository.scanMessage.listen(
-      (response) {
-        final address = _wifiRepository.getAddressFromDevice;
-
-        final state = response
-            .map(
-              (e) => ScanUiModel(
-                connectionMode: _connectionMode,
-                model: e,
-                isExpanded: e.macAddress == address ? true : false,
-                status: e.macAddress == address ? ConnectionStatus.connected : ConnectionStatus.disconnected,
-              ),
-            )
-            .toList();
-
-        int connectedIndex = state.indexWhere((item) => item.status == ConnectionStatus.connected);
-
-        if (connectedIndex != -1) {
-          ScanUiModel connectedItem = state.removeAt(connectedIndex);
-          state.insert(0, connectedItem);
-        }
-
-        connectionUiState.val = NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
-      },
-    );
+    if (_connectionMode == ConnectionMode.wifi) {
+      _subscribeToWifiMessages();
+    } else {
+      _subscribeToBluetoothMessages();
+    }
   }
 
   Future<void> dispose() async {
@@ -57,18 +37,18 @@ class ConnectionViewModel {
     _scanSubscription = null;
   }
 
-
-
   Future<void> startScan(ConnectionMode mode) async {
-    Log.i('Start Scan $mode');
+    Log.i('Start Bluetooth Scan $mode');
     connectionUiState.val = const NearByDevicesRequested();
-    await Future.delayed(const Duration(milliseconds: 300));
     _connectionMode = mode;
     await _resetAndSubscribeToScan();
     try {
+      await subscribeToMessages();
       if (mode == ConnectionMode.wifi) {
         await _wifiRepository.startScan();
-      } else {}
+      } else {
+        await _bluetoothRepository.startScan();
+      }
     } catch (e, t) {
       Log.e('[startScan Error] $e');
     }
@@ -76,15 +56,16 @@ class ConnectionViewModel {
 
   Future<void> _resetAndSubscribeToScan() async {
     await dispose();
-    await subscribeToMessages();
     await stopScan();
   }
 
   Future<void> stopScan() async {
+    Log.i('Start Bluetooth Scan');
     await _wifiRepository.stopScan();
+    await _bluetoothRepository.stopScan();
   }
 
-  Future<void> connectWifi(ScanUiModel item, ConnectionStatus status) async {
+  Future<void> connectDevice(ScanUiModel item, ConnectionStatus status) async {
     if (connectionUiState.val is NearByDevicesUpdate) {
       NearByDevicesUpdate model = connectionUiState.val;
 
@@ -99,17 +80,22 @@ class ConnectionViewModel {
         if (status == ConnectionStatus.disconnected) {
           mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.connecting);
           connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
-          final response = await _wifiRepository.connect(item.model.macAddress);
-          mutableScanDevices[index] = mutableScanDevices[index]
-              .copyWith(status: response ? ConnectionStatus.connected : ConnectionStatus.disconnected);
+
+          final response = item.connectionMode == ConnectionMode.wifi
+              ? await _wifiRepository.connect(item.model.macAddress)
+              : await _bluetoothRepository.connect(item.model.macAddress);
+
+          mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: response ? ConnectionStatus.connected : ConnectionStatus.disconnected);
           connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
         } else {
-          await _wifiRepository.disconnect();
+          item.connectionMode == ConnectionMode.wifi
+              ? await _wifiRepository.disconnect()
+              : await _bluetoothRepository.disconnect();
           mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
           connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
         }
       } catch (e, t) {
-        Log.e("Wifi connection failed $e");
+        Log.e("Device connection failed $e");
         mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
         connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
       }
@@ -140,4 +126,41 @@ class ConnectionViewModel {
     }
   }
 
+  void _subscribeToWifiMessages() {
+    _scanSubscription ??= _wifiRepository.scanMessage
+        .where((_) => _connectionMode == ConnectionMode.wifi)
+        .listen((response) => _handleScanResponse(response));
+  }
+
+  void _subscribeToBluetoothMessages() {
+    _scanSubscription ??= _bluetoothRepository.scanMessage
+        .where((_) => _connectionMode == ConnectionMode.bluetooth)
+        .listen((response) => _handleScanResponse(response));
+  }
+
+  void _handleScanResponse(List<ScanDevice> response) {
+    final connectDevice = _connectionMode == ConnectionMode.bluetooth
+        ? _bluetoothRepository.getAddressFromDevice
+        : _wifiRepository.getAddressFromDevice;
+
+    final state = response
+        .map(
+          (e) => ScanUiModel(
+            connectionMode: _connectionMode,
+            model: e,
+            isExpanded: e.macAddress == connectDevice ? true : false,
+            status: e.macAddress == connectDevice ? ConnectionStatus.connected : ConnectionStatus.disconnected,
+          ),
+        )
+        .toList();
+
+    int connectedIndex = state.indexWhere((item) => item.status == ConnectionStatus.connected);
+
+    if (connectedIndex != -1) {
+      ScanUiModel connectedItem = state.removeAt(connectedIndex);
+      state.insert(0, connectedItem);
+    }
+
+    connectionUiState.val = NearByDevicesUpdate(data: ConnectionUiState(scanDevices: state));
+  }
 }

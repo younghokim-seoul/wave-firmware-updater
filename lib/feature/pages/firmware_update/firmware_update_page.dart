@@ -11,6 +11,7 @@ import 'package:wave_desktop_installer/feature/pages/firmware_update/component/f
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_event.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/main_view_model.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
@@ -25,6 +26,7 @@ class FirmwareUpdatePage extends ConsumerStatefulWidget {
 
 class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
   final _viewModel = getIt<FirmwareUpdateViewModel>();
+  final _rootViewModel = getIt<MainViewModel>();
 
   @override
   void initState() {
@@ -58,10 +60,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                 }
 
                 if (state.data is DeviceNotConnected) {
-                  return ConnectionRequestSection(onTap: () {
-                    Log.d("Connection Start onTap");
-                    //todo 스캔화면으로 이동 필요
-                  });
+                  return ConnectionRequestSection(onTap: () => _rootViewModel.navigateToConnectionPage());
                 }
 
                 if (state.data is FirmwareVersionInfoRequested) {
@@ -69,10 +68,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                 }
 
                 if (state.data is FirmwareVersionInfoReceived) {
-                  return FirmwareIdleSection(onInstallTap: () {
-                    Log.d("onInstallTap");
-                    _viewModel.installFirmware();
-                  });
+                  return FirmwareIdleSection(onInstallTap: () => _viewModel.installFirmware());
                 }
 
                 if (state.data is FirmwareDownloadProgress) {
@@ -81,7 +77,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
                 if (state.data is FirmwareDownloadComplete) {
                   return FirmwareCompleteSection(onTap: () {
-                     _viewModel.checkFirmwareVersion(ref.watch(connectionModeProvider));
+                    _viewModel.checkFirmwareVersion(ref.watch(connectionModeProvider));
                   });
                 }
 

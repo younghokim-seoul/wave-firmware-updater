@@ -4,17 +4,15 @@ import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
 import 'package:wave_desktop_installer/feature/page_items.dart';
 import 'package:wave_desktop_installer/feature/widget/appbar/custom_app_bar.dart';
+import 'package:wave_desktop_installer/main_view_model.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
-import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yaru/yaru.dart';
 
-final materialAppNavigatorKeyProvider =
-    Provider((ref) => GlobalKey<NavigatorState>());
+final materialAppNavigatorKeyProvider = Provider((ref) => GlobalKey<NavigatorState>());
 
-final yaruPageControllerProvider =
-    Provider((ref) => YaruPageController(length: routes.length));
+final yaruPageControllerProvider = Provider((ref) => YaruPageController(length: routes.length));
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +33,6 @@ Future<void> settingWindow() async {
   );
 
   await windowManager.waitUntilReadyToShow(windowOptions);
-
 }
 
 class StoreApp extends ConsumerStatefulWidget {
@@ -50,16 +47,27 @@ class _StoreAppState extends ConsumerState<StoreApp> {
 
   NavigatorState get _navigator => _navigatorKey.currentState!;
 
+  final _viewModel = getIt<MainViewModel>();
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel.subscribeToMessages();
+    _viewModel.navigateUiEvent.stream.listen((event) {
+      if (event is MoveToConnectionPageEvent) {
+        ref.watch(yaruPageControllerProvider).index = 0;
+      }
+    });
+  }
+
+  @override
+  dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-
-
-    // Future.delayed(Duration(seconds: 2), () {
-    //   Log.d("delayed 2 seconds $_navigator");
-    //   //여기서 인덱싱교체...
-    //   ref.read(yaruPageControllerProvider)?.index = 2;
-    // });
-
     return YaruTheme(builder: (context, yaru, child) {
       return MaterialApp(
         title: 'Wave Tool Installer',
@@ -79,8 +87,7 @@ class _StoreAppState extends ConsumerState<StoreApp> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Text('WAVE Tools', style: WaveTextStyles.appBarHeader),
-                    Text('VISION WAVE Tools Ver.1.0.0 - 20241022',
-                        style: WaveTextStyles.subtitle1),
+                    Text('VISION WAVE Tools Ver.1.0.0 - 20241022', style: WaveTextStyles.subtitle1),
                   ],
                 ),
               ],

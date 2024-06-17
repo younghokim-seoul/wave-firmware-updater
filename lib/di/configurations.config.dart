@@ -22,10 +22,11 @@ import '../data/wifi_scanner.dart' as _i3;
 import '../domain/repository/bluetooth_repository.dart' as _i6;
 import '../domain/repository/patch_repository.dart' as _i11;
 import '../domain/repository/wifi_repository.dart' as _i8;
-import '../feature/pages/connection/connection_view_model.dart' as _i16;
+import '../feature/pages/connection/connection_view_model.dart' as _i17;
 import '../feature/pages/firmware_update/firmware_update_view_model.dart'
     as _i15;
 import '../feature/pages/setting/setting_view_model.dart' as _i14;
+import '../main_view_model.dart' as _i16;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i1.GetIt $initGetIt(
@@ -55,7 +56,11 @@ _i1.GetIt $initGetIt(
         gh<_i11.PatchRepository>(),
         gh<_i4.FwupdService>(),
       ));
-  gh.factory<_i16.ConnectionViewModel>(() => _i16.ConnectionViewModel(
+  gh.lazySingleton<_i16.MainViewModel>(() => _i16.MainViewModel(
+        gh<_i8.WifiRepository>(),
+        gh<_i6.BluetoothRepository>(),
+      ));
+  gh.factory<_i17.ConnectionViewModel>(() => _i17.ConnectionViewModel(
         gh<_i8.WifiRepository>(),
         gh<_i6.BluetoothRepository>(),
       ));

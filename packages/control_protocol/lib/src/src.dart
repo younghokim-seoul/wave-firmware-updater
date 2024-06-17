@@ -7,5 +7,7 @@ export 'models/ping_data_req.dart';
 export 'models/welcome_data_req.dart';
 export 'models/reboot_data_req.dart';
 export 'models/range.dart';
+export 'models/version_data_req.dart';
+export 'models/good_bye_data_req.dart';
 export 'parser.dart';
 export 'response.dart';

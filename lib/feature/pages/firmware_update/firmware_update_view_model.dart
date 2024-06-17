@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:control_protocol/control_protocol.dart';
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';

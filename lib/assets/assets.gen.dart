@@ -12,11 +12,14 @@ import 'package:flutter/widgets.dart';
 class $AssetsFontsGen {
   const $AssetsFontsGen();
 
+  /// File path: assets/fonts/NotoSansKR-Bold.ttf
+  String get notoSansKRBold => 'assets/fonts/NotoSansKR-Bold.ttf';
+
   /// File path: assets/fonts/NotoSansKR-Regular.ttf
   String get notoSansKRRegular => 'assets/fonts/NotoSansKR-Regular.ttf';
 
   /// List of all assets
-  List<String> get values => [notoSansKRRegular];
+  List<String> get values => [notoSansKRBold, notoSansKRRegular];
 }
 
 class $AssetsIconsGen {
@@ -33,6 +36,14 @@ class $AssetsIconsGen {
   /// File path: assets/icons/Btn_FirmwareUpdate_Start.png
   AssetGenImage get btnFirmwareUpdateStart =>
       const AssetGenImage('assets/icons/Btn_FirmwareUpdate_Start.png');
+
+  /// File path: assets/icons/Close_Btn_Normal.png
+  AssetGenImage get closeBtnNormal =>
+      const AssetGenImage('assets/icons/Close_Btn_Normal.png');
+
+  /// File path: assets/icons/Icon_Battery.png
+  AssetGenImage get iconBattery =>
+      const AssetGenImage('assets/icons/Icon_Battery.png');
 
   /// File path: assets/icons/Icon_WaveTools_Alert.png
   AssetGenImage get iconWaveToolsAlert =>
@@ -70,6 +81,10 @@ class $AssetsIconsGen {
   AssetGenImage get iconWifiEnable =>
       const AssetGenImage('assets/icons/Icon_wifi_enable.png');
 
+  /// File path: assets/icons/Reduction_Btn_Normal.png
+  AssetGenImage get reductionBtnNormal =>
+      const AssetGenImage('assets/icons/Reduction_Btn_Normal.png');
+
   /// File path: assets/icons/icon_wave_tools.png
   AssetGenImage get iconWaveTools =>
       const AssetGenImage('assets/icons/icon_wave_tools.png');
@@ -79,6 +94,8 @@ class $AssetsIconsGen {
         btnFirmwareUpdateComplete,
         btnFirmwareUpdateDownloading,
         btnFirmwareUpdateStart,
+        closeBtnNormal,
+        iconBattery,
         iconWaveToolsAlert,
         iconWaveToolsRefresh,
         iconWaveToolsScan,
@@ -88,6 +105,7 @@ class $AssetsIconsGen {
         iconWavetoolsConnection,
         iconWifiDisable,
         iconWifiEnable,
+        reductionBtnNormal,
         iconWaveTools
       ];
 }

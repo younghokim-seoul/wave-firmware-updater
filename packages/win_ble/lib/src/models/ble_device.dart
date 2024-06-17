@@ -43,14 +43,14 @@ class BleDevice {
       );
 
   Map<String, dynamic> toJson() => {
-        "bluetoothAddress": address,
-        "rssi": rssi,
-        "timestamp": timestamp,
-        "advType": advType,
-        "localName": name,
-        "serviceUuids": serviceUuids.toString(),
-        "manufacturerData": manufacturerData.toString(),
-      };
+    "bluetoothAddress": address,
+    "rssi": rssi,
+    "timestamp": timestamp,
+    "advType": advType,
+    "localName": name,
+    "serviceUuids": serviceUuids.toString(),
+    "manufacturerData": manufacturerData.toString(),
+  };
 }
 
 class AdStructure {

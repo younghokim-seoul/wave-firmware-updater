@@ -30,7 +30,7 @@ class CustomSlidingSegmentedControl<T> extends StatefulWidget {
     this.isShowDivider = false,
     this.dividerSettings = const DividerSettings(),
     this.clipBehavior = Clip.none,
-    this.height = 40,
+    this.height = 60,
     this.controller,
     this.customSegmentSettings,
     this.onHoverSegment,

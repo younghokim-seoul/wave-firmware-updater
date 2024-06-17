@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/sliding_control/widget.dart';
@@ -8,7 +9,6 @@ import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:yaru/theme.dart';
 
 final connectionModeProvider = StateProvider<ConnectionMode>((ref) => ConnectionMode.wifi);
-
 
 class ScanSection extends ConsumerWidget {
   const ScanSection({super.key, required this.connectionViewModel});
@@ -20,17 +20,18 @@ class ScanSection extends ConsumerWidget {
     return CustomSlidingSegmentedControl<ConnectionMode>(
       initialValue: ConnectionMode.wifi,
       isStretch: true,
-      children: const {
+      children: {
         ConnectionMode.wifi: SizedBox(
           width: double.infinity,
+          height: 60,
           child: Row(
             children: [
-              Icon(Icons.wifi, color: Colors.white),
+              Assets.icons.iconWifiEnable.image(width: 60),
               Expanded(
                 child: Center(
                   child: Text(
                     'Wi-Fi',
-                    style: WaveTextStyles.body1,
+                    style: WaveTextStyles.sideMenuTitle.copyWith(color: Colors.white),
                   ),
                 ),
               )
@@ -39,17 +40,18 @@ class ScanSection extends ConsumerWidget {
         ),
         ConnectionMode.bluetooth: SizedBox(
           width: double.infinity,
+          height: 60,
           child: Row(
             children: [
               Expanded(
                 child: Center(
                   child: Text(
                     'Bluetooth',
-                    style: WaveTextStyles.body1,
+                    style: WaveTextStyles.sideMenuTitle.copyWith(color: Colors.white),
                   ),
                 ),
               ),
-              Icon(Icons.bluetooth, color: Colors.white),
+              Assets.icons.iconBluetoothEnable.image(width: 60),
             ],
           ),
         ),

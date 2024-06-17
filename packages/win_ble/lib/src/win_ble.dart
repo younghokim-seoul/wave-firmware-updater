@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:win_ble/src/models/ble_connect_state.dart';
+import 'package:win_ble/src/models/ble_force_connect_state.dart';
 import 'package:win_ble/src/models/ble_state.dart';
 import 'package:win_ble/src/utils/win_connector.dart';
 import 'package:win_ble/src/utils/win_helper.dart';
@@ -16,14 +18,11 @@ class WinBle {
   static final WinConnector _channel = WinConnector();
 
   /// [Stream Controllers]
-  static StreamController<BleDevice> _scanStreamController =
-      StreamController.broadcast();
-  static StreamController<Map<String, dynamic>> _connectionStreamController =
-      StreamController.broadcast();
-  static StreamController _characteristicValueStreamController =
-      StreamController.broadcast();
-  static StreamController<BleState> _bleStateStreamController =
-      StreamController.broadcast();
+  static StreamController<BleDevice> _scanStreamController = StreamController.broadcast();
+  static StreamController<Map<String, dynamic>> _connectionStreamController = StreamController.broadcast();
+  static StreamController _characteristicValueStreamController = StreamController.broadcast();
+  static StreamController<BleState> _bleStateStreamController = StreamController.broadcast();
+  static StreamController<String> _loggerStreamController = StreamController.broadcast();
 
   /// make sure to [initialize] WinBle once before using it
   /// call [dispose] when Done
@@ -52,7 +51,10 @@ class WinBle {
   }
 
   static void _handleMessages(message) {
-    WinHelper.printLog("Received Message : $message");
+    if (message["_type"] != "response" && message["_type"] != "scanResult") {
+      WinHelper.printLog("Received Message : $message");
+      _loggerStreamController.add(message.toString());
+    }
     switch (message["_type"]) {
       /// ScanResult events
       case "scanResult":
@@ -73,14 +75,14 @@ class WinBle {
         _connectionStreamController.add({
           "device": WinHelper.getAddressFromDevice(device) ?? device,
           "connected": false,
+          "isForced": false,
         });
         break;
 
       /// Handle characteristic value updates
       case "valueChangedNotification":
         String subscriptionKey = message["subscriptionId"]?.toString() ?? "";
-        Map<String, String>? data =
-            WinHelper.getDataFromSubscriptionKey(subscriptionKey);
+        Map<String, String>? data = WinHelper.getDataFromSubscriptionKey(subscriptionKey);
         if (data != null) {
           var value = message["value"];
           var result = {};
@@ -88,8 +90,7 @@ class WinBle {
           result.addAll({"value": value});
           _characteristicValueStreamController.add(result);
         } else {
-          WinHelper.printLog(
-              "Received Unknown Data from SubscriptionKey : $subscriptionKey");
+          WinHelper.printLog("Received Unknown Data from SubscriptionKey : $subscriptionKey");
         }
         break;
     }
@@ -136,53 +137,68 @@ class WinBle {
 
   /// To [Start Scanning ]
   static void startScanning() {
-    _channel.invokeMethod("scan", waitForResult: false);
+    _channel.invokeMethod('scan', waitForResult: false);
   }
 
   /// To [Stop Scanning]
   static void stopScanning() {
-    _channel.invokeMethod("stopScan", waitForResult: false);
+    _channel.invokeMethod('stopScan', waitForResult: false);
   }
 
   /// [connect] will update a Stream of boolean [getConnectionStream]
   /// true if connected
   /// false if disconnected
-  static Future<bool> connect(String address) async {
+  static Future<BleForceConnectState> connect(String address) async {
     try {
       var result = await _channel.invokeMethod("connect", args: {
         "address": address.replaceAll(":", ""),
       });
       WinHelper.deviceMap[address] = result;
       // we have to perform an operation on device in order to make a connection
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
       var services = await discoverServices(address, forceRefresh: true);
       // A temporary way of detecting connection : if services are empty then connection is failed
+
+      WinHelper.printLog(
+          "A temporary way of detecting connection : if services are empty then connection is failed $services");
       bool connectionFailed = services.isEmpty;
+
       _connectionStreamController.add({
         "device": address,
         "connected": !connectionFailed,
+        "isForced": false,
       });
 
-      return !connectionFailed;
+      return BleForceConnectState(
+        address: address,
+        state: !connectionFailed,
+        serviceUuidList: services,
+      );
     } catch (e) {
+      WinHelper.printLog('connect error... $e');
       rethrow;
     }
   }
 
   /// [disconnect] will update a Stream of boolean [getConnectionStream]
   /// and also ignore if that device is already disconnected
-  static Future<void> disconnect(address) async {
+  static Future<void> disconnect(address, Function(String val)? fail) async {
     try {
-      await _channel.invokeMethod("disconnect", args: {
-        "device": WinHelper.getDeviceFromAddress(address),
+      await _channel.invokeMethod('disconnect', args: {
+        'device': WinHelper.getDeviceFromAddress(address),
       });
       _connectionStreamController.add({
-        "device": address,
-        "connected": false,
+        'device': address,
+        'connected': false,
+        'isForced': true,
       });
       WinHelper.deviceMap[address] = null;
     } catch (e) {
-      if (e.toString().contains("not found")) {
+      if (e.toString().contains('not found')) {
         // ignore for now
+        fail?.call(e.toString());
       } else {
         rethrow;
       }
@@ -209,9 +225,7 @@ class WinBle {
   }) async {
     try {
       var result = await _channel.invokeMethod("isPaired", args: {
-        "device": forceRefresh
-            ? address.replaceAll(":", "")
-            : WinHelper.getDeviceFromAddress(address),
+        "device": forceRefresh ? address.replaceAll(":", "") : WinHelper.getDeviceFromAddress(address),
         "forceRefresh": forceRefresh,
       });
       return result != null && result;
@@ -251,8 +265,7 @@ class WinBle {
   }
 
   /// [discoverServices] will return a list of services List
-  static Future<List<String>> discoverServices(address,
-      {bool forceRefresh = false}) async {
+  static Future<List<String>> discoverServices(address, {bool forceRefresh = false}) async {
     List? services = await _channel.invokeMethod("services", args: {
       "device": WinHelper.getDeviceFromAddress(address),
       "forceRefresh": forceRefresh,
@@ -262,23 +275,18 @@ class WinBle {
 
   /// [discoverCharacteristics] will return a list of [BleCharacteristic]
   static Future<List<BleCharacteristic>> discoverCharacteristics(
-      {required String address,
-      required String serviceId,
-      bool forceRefresh = false}) async {
+      {required String address, required String serviceId, bool forceRefresh = false}) async {
     var data = await _channel.invokeMethod("characteristics", args: {
       "device": WinHelper.getDeviceFromAddress(address),
       "service": WinHelper.toWindowsUuid(serviceId),
       "forceRefresh": forceRefresh,
     });
-    return List<BleCharacteristic>.from(
-        data.map((e) => BleCharacteristic.fromJson(e)));
+    return List<BleCharacteristic>.from(data.map((e) => BleCharacteristic.fromJson(e)));
   }
 
   /// [read] will read characteristic value and returns a List<int>
   static Future<List<int>> read(
-      {required String address,
-      required String serviceId,
-      required String characteristicId}) async {
+      {required String address, required String serviceId, required String characteristicId}) async {
     var data = await _channel.invokeMethod("read", args: {
       "device": WinHelper.getDeviceFromAddress(address),
       "service": WinHelper.toWindowsUuid(serviceId),
@@ -308,9 +316,7 @@ class WinBle {
   /// we can get update on [connectionStream]
   /// call [connectionStreamOf] to get value of specific characteristic
   static Future<void> subscribeToCharacteristic(
-      {required String address,
-      required String serviceId,
-      required String characteristicId}) async {
+      {required String address, required String serviceId, required String characteristicId}) async {
     await _channel.invokeMethod("subscribe", args: {
       "device": WinHelper.getDeviceFromAddress(address),
       "service": WinHelper.toWindowsUuid(serviceId),
@@ -326,9 +332,7 @@ class WinBle {
 
   /// [unSubscribeFromCharacteristic] will unsubscribe from characteristic , throws error if this characteristic is not subscribed
   static Future<void> unSubscribeFromCharacteristic(
-      {required String address,
-      required String serviceId,
-      required String characteristicId}) async {
+      {required String address, required String serviceId, required String characteristicId}) async {
     await _channel.invokeMethod("unsubscribe", args: {
       "device": WinHelper.getDeviceFromAddress(address),
       "service": WinHelper.toWindowsUuid(serviceId),
@@ -341,24 +345,27 @@ class WinBle {
   /// All Streams
   ///
   /// use [scanStream] to get scan results
-  static Stream<BleDevice> get scanStream => _scanStreamController.stream;
+  static Stream<BleDevice> get scanStream =>
+      _scanStreamController.stream.where((event) => event.name.contains("WAVE") || event.name.contains("G-Putt"));
 
   /// we can get [connectionStream] to get update on connection
-  static Stream<Map<String, dynamic>> get connectionStream =>
-      _connectionStreamController.stream;
+  static Stream<Map<String, dynamic>> get connectionStream => _connectionStreamController.stream;
 
   /// [bleState] is a stream to get current Ble Status
   static Stream<BleState> get bleState => _bleStateStreamController.stream;
 
   /// [characteristicValueStream] is a stream to get characteristic value updates
-  static Stream get characteristicValueStream =>
-      _characteristicValueStreamController.stream;
+  static Stream get characteristicValueStream => _characteristicValueStreamController.stream;
 
   /// to get [connection update] for a specific device
-  static Stream<bool> connectionStreamOf(String address) =>
-      _connectionStreamController.stream
-          .where((event) => event["device"] == address)
-          .map((event) => event["connected"]);
+  static Stream<BleConnectState> connectionStreamOf(String address) =>
+      _connectionStreamController.stream.where((event) => event["device"] == address).map((event) => BleConnectState(
+            address: event["device"],
+            state: event["connected"],
+            isForced: event["isForced"],
+          ));
+
+  static Stream<String> get loggerStreamController => _loggerStreamController.stream;
 
   /// to get update of a [specific characteristic]
   static Stream characteristicValueStreamOf({

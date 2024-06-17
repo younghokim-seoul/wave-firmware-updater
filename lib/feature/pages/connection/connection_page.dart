@@ -4,8 +4,8 @@ import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
+import 'package:wave_desktop_installer/feature/pages/connection/component/device_scan_view.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/scan_section.dart';
-import 'package:wave_desktop_installer/feature/pages/connection/component/wifi_view.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/commom_button.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
@@ -30,6 +30,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
 
   @override
   void dispose() {
+    Log.d('ConnectionPage dispose');
     _viewModel.connectionUiState.close();
     _viewModel.dispose();
     super.dispose();
@@ -44,18 +45,13 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Gap(30),
+            const Gap(30),
             const Text('WAVE Sensor Connection', style: WaveTextStyles.headline4Bold),
-            Gap(30),
+            const Gap(30),
             ScanSection(connectionViewModel: _viewModel),
-            Gap(30),
+            const Gap(30),
             Expanded(
-              child: WifiListView(
-                connectionViewModel: _viewModel,
-                onSelected: () {
-                  Log.d('onSelected');
-                },
-              ),
+              child: DeviceScanView(connectionViewModel: _viewModel),
             )
           ],
         ),
@@ -70,7 +66,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                 'Rescan Nearby Devices',
                 style: WaveTextStyles.buttonLarge,
               ),
-              onTap: () =>  _viewModel.startScan(ref.read(connectionModeProvider)),
+              onTap: () => _viewModel.startScan(ref.read(connectionModeProvider)),
             ),
             const Gap(43),
           ],

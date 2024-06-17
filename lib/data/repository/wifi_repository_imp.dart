@@ -96,7 +96,7 @@ class WifiRepositoryImp extends WifiRepository {
   }
 
   @override
-  Future<void> disconnect() async {
+  Future<void> disconnect([String ssid = '']) async {
     Log.d("Disconnecting...");
 
     _controller.add(ConnectionStatus.disconnected);
@@ -154,14 +154,7 @@ class WifiRepositoryImp extends WifiRepository {
   bool get isClosed => _clientRepository.isClosed;
 
   @override
-  String? get getAddressFromDevice => _getAddressFromDevice();
+  String? get getAddressFromDevice => _deviceMap.getAddressFromDevice();
 
-  String? _getAddressFromDevice() {
-    String? address;
-    _deviceMap.forEach((key, value) {
-      address = key;
-    });
-    return address;
-  }
 
 }

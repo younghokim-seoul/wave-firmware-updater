@@ -80,6 +80,9 @@ flutter:
     - family: NotoSansKR
       fonts:
         - asset: assets/fonts/NotoSansKR-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansKR-Regular.ttf
+          weight: 700
 
 flutter_gen:
   integrations:

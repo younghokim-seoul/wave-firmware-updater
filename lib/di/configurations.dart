@@ -8,6 +8,8 @@ import 'package:wave_desktop_installer/data/network/api_client.dart';
 import 'package:wave_desktop_installer/data/network/api_service.dart';
 import 'package:wave_desktop_installer/utils/constant.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
+import 'package:win_ble/win_ble.dart';
+import 'package:win_ble/win_file.dart';
 
 import 'configurations.config.dart' as config;
 
@@ -25,10 +27,11 @@ Future<void> $initGetIt(
   String? environment,
   EnvironmentFilter? environmentFilter,
 }) async {
-
   final gh = GetItHelper(getIt, environment.toString());
 
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  await WinBle.initialize(serverPath: await WinServer.path(), enableLog: !kReleaseMode);
 
   var baseApiClient = ApiClient(enableLogging: !kReleaseMode);
 
