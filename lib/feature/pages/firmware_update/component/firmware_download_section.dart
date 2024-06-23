@@ -60,7 +60,7 @@ class FirmwareDownloadSection extends ConsumerWidget {
           Log.d('dividePercent: $dividePercent');
           return LinearPercentIndicator(
             lineHeight: 30,
-            center: Text('$originPercent%', style: WaveTextStyles.subtitle2Bold.copyWith(color: Colors.white)),
+            center: Text('${originPercent.floor()}%', style: WaveTextStyles.subtitle2Bold.copyWith(color: Colors.white)),
             progressColor: YaruColors.blue,
             percent: dividePercent,
             animation: false,

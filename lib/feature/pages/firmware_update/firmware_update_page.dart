@@ -32,8 +32,9 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
   void initState() {
     Log.d("FirmwareUpdatePage initState!!");
     super.initState();
+    _viewModel.setConnectionMode(ref.read(connectionModeProvider));
     _viewModel.subscribeToStatuses();
-    _viewModel.checkFirmwareVersion(ref.read(connectionModeProvider));
+    _viewModel.checkFirmwareVersion();
   }
 
   @override
@@ -77,7 +78,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
                 if (state.data is FirmwareDownloadComplete) {
                   return FirmwareCompleteSection(onTap: () {
-                    _viewModel.checkFirmwareVersion(ref.watch(connectionModeProvider));
+                    _viewModel.checkFirmwareVersion();
                   });
                 }
 

@@ -5,16 +5,17 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:ftp_connect/ftpconnect.dart';
 import 'package:injectable/injectable.dart';
+import 'package:path/path.dart' as p;
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
-import 'package:path/path.dart' as p;
 import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
+import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/utils/constant.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 
 @LazySingleton(as: FwupdService)
 class FwupdImp extends FwupdService {
-  FwupdImp()
+  FwupdImp(this._bluetoothRepository)
       : _dio = Dio(),
         _fs = const LocalFileSystem(),
         _ftp = FTPConnect(
@@ -28,6 +29,7 @@ class FwupdImp extends FwupdService {
   final Dio _dio;
   final FileSystem _fs;
   final FTPConnect _ftp;
+  final BluetoothRepository _bluetoothRepository;
 
   double? _downloadProgress;
   FwupdStatus _currentState = FwupdStatus.idle;
@@ -38,10 +40,12 @@ class FwupdImp extends FwupdService {
     final path = p.join(_fs.systemTempDirectory.path, p.basename(url));
     Log.d('download $url to $path');
     try {
-      return await _dio.download(
+      return await _dio
+          .download(
         url,
         path,
-      ).then((response) {
+      )
+          .then((response) {
         final file = _fs.file(path);
         final newPath = p.join(_fs.systemTempDirectory.path, 'patch${p.extension(path)}');
         return file.rename(newPath);
@@ -65,13 +69,35 @@ class FwupdImp extends FwupdService {
   FwupdStatus get status => _downloadProgress != null ? FwupdStatus.downloading : _currentState;
 
   @override
-  Future<void> install(FirmwareVersion release) async {
-    Log.d('::::installing... $release');
+  Future<void> wifiInstall(FirmwareVersion release) async {
+    Log.d('::::wifiInstall... $release');
     try {
+      _currentState = FwupdStatus.downloading;
       final patchFile = await _downloadRelease(release.patchDownloadUrl);
       final fileSize = await patchFile.readAsBytes();
       Log.d("::::patchFile fileSize... ${fileSize.length}");
       await _installBinary(patchFile);
+      _currentState = FwupdStatus.idle;
+    } on Exception catch (e) {
+      Log.e('::::install error... $e');
+      _currentState = FwupdStatus.idle;
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> bluetoothInstall(FirmwareVersion release) async {
+    Log.d('::::bluetoothInstall... $release');
+    try {
+      _currentState = FwupdStatus.downloading;
+      final patchFile = await _downloadRelease(release.patchDownloadUrl);
+      // final fileSize = await patchFile.readAsBytes();
+      // Log.d("::::patchFile fileSize... ${fileSize.length}");
+      await _bluetoothRepository.startOTA(patchFile,(progress) {
+        Log.d("블루투스 퍼센테이지... $progress");
+        _setDownloadProgress(progress);
+      });
+      Log.d('::::블루투스 펌웨어 업데이트 완료....');
       _currentState = FwupdStatus.idle;
     } on Exception catch (e) {
       Log.e('::::install error... $e');

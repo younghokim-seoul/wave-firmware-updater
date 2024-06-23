@@ -5,11 +5,17 @@ import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/device_scan_view.dart';
+import 'package:wave_desktop_installer/feature/pages/connection/component/device_section.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/scan_section.dart';
+import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/commom_button.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
+import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
+import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
+
+import '../../widget/loading/dot_circle.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
   const ConnectionPage({super.key});
@@ -25,14 +31,14 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   void initState() {
     super.initState();
     Log.d('ConnectionPage init');
+    _viewModel.subscribeToConnection();
     _viewModel.startScan(ConnectionMode.wifi);
   }
 
   @override
   void dispose() {
     Log.d('ConnectionPage dispose');
-    _viewModel.connectionUiState.close();
-    _viewModel.dispose();
+    _viewModel.disposeAll();
     super.dispose();
   }
 

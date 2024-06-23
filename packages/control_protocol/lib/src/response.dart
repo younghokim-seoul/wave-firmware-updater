@@ -47,6 +47,31 @@ class WaveSensorHeartBeatResponse extends WaveSensorResponse {
       ];
 }
 
+class FirmwareDownloadModeResponse extends WaveSensorResponse {
+  const FirmwareDownloadModeResponse({
+    required this.status,
+  });
+
+  final bool status;
+
+  @override
+  List<Object?> get props => [status];
+}
+
+class FirmwareDownloadingResponse extends WaveSensorResponse {
+  const FirmwareDownloadingResponse({
+    required this.status,
+    required this.pageNum,
+  });
+
+  final bool status;
+  final int pageNum;
+
+  @override
+  List<Object?> get props => [status, pageNum];
+}
+
+
 class WaveSensorUnknownResponse extends WaveSensorResponse {
   const WaveSensorUnknownResponse({
     required this.data,

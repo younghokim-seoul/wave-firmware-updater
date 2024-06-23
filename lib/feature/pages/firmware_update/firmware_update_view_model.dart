@@ -28,70 +28,93 @@ class FirmwareUpdateViewModel {
   final PatchRepository _patchRepository;
   final FwupdService _fwupdService;
 
+  ConnectionMode connectionMode = ConnectionMode.wifi;
+
+  bool get isClosed => connectionMode == ConnectionMode.wifi ? _wifiRepository.isClosed : _bleRepository.isClosed;
+
   final firmwareUiEvent = ArcSubject<FirmwareUpdateEvent>();
   final percentage = ArcSubject<double>(seed: 0.0);
   StreamSubscription? _statusesSubscription;
 
+  void setConnectionMode(ConnectionMode mode) {
+    connectionMode = mode;
+  }
+
   Future<void> subscribeToStatuses() async {
     Log.i(":::::: subscribeToMessages");
-    _statusesSubscription ??= _wifiRepository.statuses.listen(
-      (state) {
-        Log.i('::::: subscribeToMessages $state');
-      },
-      onDone: () {
-        Log.i('::::: subscribeToMessages onDone');
-      },
-    );
+
+    if (connectionMode == ConnectionMode.wifi) {
+      _statusesSubscription ??= _wifiRepository.statuses.listen(
+        (state) {
+          Log.i('::::: wifi 연결상태 콜백 $state');
+          rememberLatestState();
+        },
+        onDone: () {
+          Log.i('::::: subscribeToMessages onDone');
+        },
+      );
+    } else {
+      _statusesSubscription ??= _bleRepository.statuses.listen(
+        (state) {
+          Log.i('::::: bluetooth 연결상태 콜백 ${state.state} ${state.address}');
+          rememberLatestState();
+        },
+        onDone: () {
+          Log.i('::::: subscribeToMessages onDone');
+        },
+      );
+    }
   }
+
   Future<void> _unsubscribeFromStatuses() async {
     Log.i(":::::: _unsubscribeFromStatuses");
     await _statusesSubscription?.cancel();
     _statusesSubscription = null;
   }
 
-  rememberLatestState(ConnectionMode mode) {
-    bool isClosed = _wifiRepository.isClosed;
-
+  rememberLatestState() {
     if (isClosed) {
       Log.i("not connected Device");
-      firmwareUiEvent.val = const DeviceNotConnected();
+      loadState(const DeviceNotConnected());
       return;
     }
-
 
     Log.i("addFirmWareChannelListener");
     _fwupdService.addFirmWareChannelListener(
       FirmWareChannelListener(
         onPercentageChanged: (progress) {
           Log.d('[ViewModel Receive] onPercentageChanged $progress');
+          if(percentage.subject.isClosed)return;
           percentage.val = progress;
-        },
-        onDownloadStateChanged: (status) {
-          Log.d('onStatusChanged $status');
         },
       ),
     );
   }
 
-  void checkFirmwareVersion(ConnectionMode mode) async {
-    Log.i('[checkFirmwareVersion]' + _fwupdService.status.toString() + " | " + _wifiRepository.isClosed.toString());
+  void checkFirmwareVersion() async {
+    Log.i('[checkFirmwareVersion]' +
+        _fwupdService.status.toString() +
+        " | isCloed " +
+        isClosed.toString() +
+        " | connectionMode " +
+        connectionMode.toString());
 
-    rememberLatestState(mode);
+    rememberLatestState();
 
-    if (_fwupdService.status != FwupdStatus.idle || _wifiRepository.isClosed) {
+    if (_fwupdService.status != FwupdStatus.idle || isClosed) {
       Log.i('checkFirmwareVersion status is not idle or not connected Device');
       return;
     }
     try {
-      firmwareUiEvent.val = const FirmwareVersionInfoRequested();
+      loadState(const FirmwareVersionInfoRequested());
       final response = await _patchRepository.fetchPatchDetails();
       Log.i('[checkFirmwareUpdate] response $response');
 
       //todo : 최신 버전 체크 과 다운로드 분기처리 필요
-      firmwareUiEvent.val = FirmwareVersionInfoReceived(data: response);
+      loadState(FirmwareVersionInfoReceived(data: response));
     } catch (e) {
       Log.e('[checkFirmwareUpdate] error: $e');
-      firmwareUiEvent.val = const FirmwareVersionInfoReceived(data: null);
+      loadState(const FirmwareVersionInfoReceived(data: null));
     }
   }
 
@@ -102,16 +125,27 @@ class FirmwareUpdateViewModel {
         final firmwareVersion = (firmwareUiEvent.val as FirmwareVersionInfoReceived).data;
 
         if (!firmwareVersion.isNullOrEmpty) {
-          firmwareUiEvent.val = const FirmwareDownloadProgress(downloadProgress: null);
-          await _fwupdService.install(firmwareVersion!);
-          await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
-          firmwareUiEvent.val = const FirmwareDownloadComplete();
+          loadState(const FirmwareDownloadProgress(downloadProgress: null));
+          if (connectionMode == ConnectionMode.bluetooth) {
+            await _fwupdService.bluetoothInstall(firmwareVersion!);
+            await _bleRepository.send(RebootDataRequest().getRawBytes());
+            loadState(const FirmwareDownloadComplete());
+          } else {
+            await _fwupdService.wifiInstall(firmwareVersion!);
+            await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
+           loadState(const FirmwareDownloadComplete());
+          }
         }
       } catch (e) {
         Log.e("[installFirmware] error... $e");
-        firmwareUiEvent.val = const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail);
+        loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail));
       }
     }
+  }
+
+  void loadState(state) {
+    if(firmwareUiEvent.subject.isClosed)return;
+    firmwareUiEvent.val = state;
   }
 
   void dispose() {

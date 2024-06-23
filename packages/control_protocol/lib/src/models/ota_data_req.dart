@@ -15,7 +15,6 @@ class OtaDataRequest extends BaseModel {
   }
 
   setDate(Uint8List data) {
-    print("data size : ${data.length}");
     rawBytes.setRange(dataRange.start, dataRange.end, data);
     rawBytes[dataRange.end] ='%'.codeUnits[0];
   }

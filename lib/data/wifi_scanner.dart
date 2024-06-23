@@ -126,13 +126,9 @@ class WifiScanner {
             i * sizeOf<WLAN_AVAILABLE_NETWORK>();
         final networkPtr = Pointer<WLAN_AVAILABLE_NETWORK>.fromAddress(networkAddress);
         final network = networkPtr.ref;
-        print(" SSID LENGTH : ${network.dot11Ssid.uSSIDLength}");
         if(network.dot11Ssid.uSSIDLength == 13){
           final ssid = network.dot11Ssid.toRawString();
           final rssi = network.wlanSignalQuality;
-
-          Log.i("SSID: $ssid, RSSI: $rssi");
-
           if (ssid.contains("WAVE")) {
             results.add(ScanDevice(deviceName: ssid, macAddress: ssid, rssi: rssi.toString()));
           }

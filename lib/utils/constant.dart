@@ -8,6 +8,10 @@ class Const {
   static const String waveIp = '192.168.8.1';
   static const int wavePort = 4999;
 
+  static const String waveServiceUuid = "dec7cf01-c159-43c4-9fee-0efde1a0f54b";
+  static const String waveWriteUuid = "dec7cf03-c159-43c4-9fee-0efde1a0f54b";
+  static const String waveNotifyUuid = "dec7cf04-c159-43c4-9fee-0efde1a0f54b";
+
   static const String baseUrl = 'https://skills.golfzonwave.com';
   static const String publicApi = '/common/json';
 

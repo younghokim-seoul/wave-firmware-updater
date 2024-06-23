@@ -10,8 +10,9 @@ import 'package:wave_desktop_installer/feature/pages/connection/connection_event
 import 'package:wave_desktop_installer/feature/pages/connection/connection_state.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
+import 'package:win_ble/win_ble.dart';
 
-@injectable
+@lazySingleton
 class ConnectionViewModel {
   ConnectionViewModel(this._wifiRepository, this._bluetoothRepository);
 
@@ -21,8 +22,18 @@ class ConnectionViewModel {
   final connectionUiState = ArcSubject<ConnectionEvent>();
 
   StreamSubscription? _scanSubscription;
+  StreamSubscription? _connectionSubscription;
 
   ConnectionMode _connectionMode = ConnectionMode.wifi;
+
+
+  Future<void> subscribeToConnection() async {
+    if (_connectionMode == ConnectionMode.wifi) {
+      _subscribeToWifiConnectionStatus();
+    } else {
+      _subscribeToBluetoothConnectionStatus();
+    }
+  }
 
   Future<void> subscribeToMessages() async {
     if (_connectionMode == ConnectionMode.wifi) {
@@ -32,9 +43,20 @@ class ConnectionViewModel {
     }
   }
 
-  Future<void> dispose() async {
-    _scanSubscription?.cancel();
+  void disposeAll() {
+    stopScan();
+    disposeScan();
+    disposeConnection();
+  }
+
+  Future<void> disposeScan() async {
+    await _scanSubscription?.cancel();
     _scanSubscription = null;
+  }
+
+  Future<void> disposeConnection() async {
+    await _connectionSubscription?.cancel();
+    _connectionSubscription = null;
   }
 
   Future<void> startScan(ConnectionMode mode) async {
@@ -55,14 +77,16 @@ class ConnectionViewModel {
   }
 
   Future<void> _resetAndSubscribeToScan() async {
-    await dispose();
+    await disposeScan();
     await stopScan();
   }
 
   Future<void> stopScan() async {
-    Log.i('Start Bluetooth Scan');
+    Log.i('Stop Bluetooth Scan');
     await _wifiRepository.stopScan();
     await _bluetoothRepository.stopScan();
+
+
   }
 
   Future<void> connectDevice(ScanUiModel item, ConnectionStatus status) async {
@@ -83,7 +107,9 @@ class ConnectionViewModel {
 
           final response = item.connectionMode == ConnectionMode.wifi
               ? await _wifiRepository.connect(item.model.macAddress)
-              : await _bluetoothRepository.connect(item.model.macAddress);
+              : await _bluetoothRepository.connect(item.model);
+
+          subscribeToConnection();
 
           mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: response ? ConnectionStatus.connected : ConnectionStatus.disconnected);
           connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
@@ -94,6 +120,7 @@ class ConnectionViewModel {
           mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
           connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: mutableScanDevices));
         }
+
       } catch (e, t) {
         Log.e("Device connection failed $e");
         mutableScanDevices[index] = mutableScanDevices[index].copyWith(status: ConnectionStatus.disconnected);
@@ -126,22 +153,54 @@ class ConnectionViewModel {
     }
   }
 
+  void _subscribeToWifiConnectionStatus() {
+    // _connectionSubscription ??= _wifiRepository.statuses
+    //     .where((_) => _connectionMode == ConnectionMode.wifi)
+    //     .listen((response) => _handleConnectionResponse(response));
+  }
+
+  void _subscribeToBluetoothConnectionStatus() {
+    _connectionSubscription ??= _bluetoothRepository.statuses
+        .listen((response) => _handleConnectionResponse(response));
+  }
+
   void _subscribeToWifiMessages() {
     _scanSubscription ??= _wifiRepository.scanMessage
-        .where((_) => _connectionMode == ConnectionMode.wifi)
         .listen((response) => _handleScanResponse(response));
   }
 
   void _subscribeToBluetoothMessages() {
     _scanSubscription ??= _bluetoothRepository.scanMessage
-        .where((_) => _connectionMode == ConnectionMode.bluetooth)
         .listen((response) => _handleScanResponse(response));
+  }
+
+  void _handleConnectionResponse(BleConnectState response) {
+    Log.d('[_handleConnectionResponse] Connection State: [ ${response.state} ] ${response.address} ');
+
+
+
+    if (connectionUiState.val is NearByDevicesUpdate) {
+      NearByDevicesUpdate model = connectionUiState.val;
+
+      final updateScanDevices = model.data.scanDevices.map((e) {
+        if (e.model.macAddress == response.address) {
+          return e.copyWith(status: response.state ? ConnectionStatus.connected : ConnectionStatus.disconnected);
+        } else {
+          return e;
+        }
+      }).toList();
+
+      connectionUiState.val = NearByDevicesUpdate(data: model.data.copyWith(scanDevices: updateScanDevices));
+    }
   }
 
   void _handleScanResponse(List<ScanDevice> response) {
     final connectDevice = _connectionMode == ConnectionMode.bluetooth
         ? _bluetoothRepository.getAddressFromDevice
         : _wifiRepository.getAddressFromDevice;
+
+    Log.d("response... $response");
+    Log.d("connectDevice... $connectDevice");
 
     final state = response
         .map(

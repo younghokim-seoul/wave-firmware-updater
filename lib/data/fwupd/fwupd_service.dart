@@ -1,4 +1,5 @@
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
+import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
 
 enum FwupdStatus {
@@ -16,7 +17,8 @@ abstract class FwupdService {
   FwupdStatus get status;
   double get percentage;
 
-  Future<void> install(FirmwareVersion release);
+  Future<void> wifiInstall(FirmwareVersion release);
+  Future<void> bluetoothInstall(FirmwareVersion release);
   Future<void> reboot();
 
   void addFirmWareChannelListener(FirmWareChannelListener listener);

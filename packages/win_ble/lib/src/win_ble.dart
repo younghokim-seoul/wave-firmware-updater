@@ -78,6 +78,14 @@ class WinBle {
           "isForced": false,
         });
         break;
+      case "connectEvent":
+        String device = message["device"];
+        _connectionStreamController.add({
+          "device": WinHelper.getAddressFromDevice(device) ?? device,
+          "connected": true,
+          "isForced": false,
+        });
+        break;
 
       /// Handle characteristic value updates
       case "valueChangedNotification":
@@ -345,8 +353,8 @@ class WinBle {
   /// All Streams
   ///
   /// use [scanStream] to get scan results
-  static Stream<BleDevice> get scanStream =>
-      _scanStreamController.stream.where((event) => event.name.contains("WAVE") || event.name.contains("G-Putt"));
+  static Stream<BleDevice> get scanStream => _scanStreamController.stream.where((event) => event.name.contains("WAVE") || event.name.contains("G-Putt"));
+
 
   /// we can get [connectionStream] to get update on connection
   static Stream<Map<String, dynamic>> get connectionStream => _connectionStreamController.stream;

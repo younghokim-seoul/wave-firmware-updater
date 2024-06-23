@@ -231,20 +231,17 @@ class _DeviceInfoState extends State<DeviceInfo> {
           address: address, serviceId: serviceId, characteristicId: characteristicId);
       await WinBle.subscribeToCharacteristic(
           address: address, serviceId: serviceId, characteristicId: characteristicId);
-      print("SubscribeToCharacteristic Success");
     } catch (e) {
-      print("unSubscribeToCharacteristic Error: $e");
       for (int i = 0; i < 3; i++) {
         try {
           await WinBle.subscribeToCharacteristic(
-              address: address, serviceId: serviceId, characteristicId: characteristicId);
-          print("subscribeToCharacteristic Success  Retry Count: $i");
+            address: address,
+            serviceId: serviceId,
+            characteristicId: characteristicId,
+          );
           break;
         } catch (e) {
-          print("subscribeToCharacteristic Error : $e, Retry Count: $i");
-
           if (i == 2) {
-            print("Failed to subscribe to characteristic after 3 attempts");
             rethrow;
           }
         }
@@ -254,7 +251,7 @@ class _DeviceInfoState extends State<DeviceInfo> {
 
   disconnect(address) async {
     try {
-      await WinBle.disconnect(address,null);
+      await WinBle.disconnect(address, null);
       showSuccess("Disconnected");
       disconnectAndClearAllDevices();
     } catch (e) {
