@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:yaru/yaru.dart';
 
-final kCustomAppBarSize = const Size.fromHeight(100);
+const kCustomAppBarSize = Size.fromHeight(100);
 
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -24,6 +24,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String? title;
   final List<Widget>? actions;
   final EdgeInsets padding;
+
 
   @override
   Size get preferredSize => kCustomAppBarSize;

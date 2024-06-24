@@ -30,21 +30,18 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   @override
   void initState() {
     super.initState();
-    Log.d('ConnectionPage init');
     _viewModel.subscribeToConnection();
-    _viewModel.startScan(ConnectionMode.wifi);
+    _viewModel.startScan(ref.read(connectionModeProvider));
   }
 
   @override
   void dispose() {
-    Log.d('ConnectionPage dispose');
     _viewModel.disposeAll();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Log.d('ConnectionPage build');
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 100),

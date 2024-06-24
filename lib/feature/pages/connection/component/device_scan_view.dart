@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/device_section.dart';
+import 'package:wave_desktop_installer/feature/pages/connection/component/scan_section.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
+import 'package:wave_desktop_installer/feature/widget/common_guide_button.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
-import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 
@@ -24,6 +25,7 @@ class DeviceScanView extends ConsumerWidget {
           return const SizedBox.shrink();
         }
         final event = state.data;
+
         if (event is NearByDevicesUpdate) {
           return ListView.builder(
             itemCount: event.data.scanDevices.length,

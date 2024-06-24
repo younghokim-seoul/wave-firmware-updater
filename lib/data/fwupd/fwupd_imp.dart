@@ -40,16 +40,13 @@ class FwupdImp extends FwupdService {
     final path = p.join(_fs.systemTempDirectory.path, p.basename(url));
     Log.d('download $url to $path');
     try {
-      return await _dio
-          .download(
-        url,
-        path,
-      )
-          .then((response) {
-        final file = _fs.file(path);
-        final newPath = p.join(_fs.systemTempDirectory.path, 'patch${p.extension(path)}');
-        return file.rename(newPath);
-      });
+      return await _dio.download(url, path).then(
+        (response) {
+          final file = _fs.file(path);
+          final newPath = p.join(_fs.systemTempDirectory.path, 'patch${p.extension(path)}');
+          return file.rename(newPath);
+        },
+      );
     } finally {
       _setDownloadProgress(null);
     }
@@ -93,7 +90,7 @@ class FwupdImp extends FwupdService {
       final patchFile = await _downloadRelease(release.patchDownloadUrl);
       // final fileSize = await patchFile.readAsBytes();
       // Log.d("::::patchFile fileSize... ${fileSize.length}");
-      await _bluetoothRepository.startOTA(patchFile,(progress) {
+      await _bluetoothRepository.startOTA(patchFile, (progress) {
         Log.d("블루투스 퍼센테이지... $progress");
         _setDownloadProgress(progress);
       });

@@ -11,7 +11,7 @@ import 'package:win32/win32.dart';
 typedef WifiSearchEventCallback = void Function(String ssid, String rssi);
 
 @lazySingleton
-class WifiScanner {
+class SystemWifiUtils {
   Future<List<ScanDevice>> performNetworkScan() async {
     return await compute(scanNetworks, null);
   }

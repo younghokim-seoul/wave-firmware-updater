@@ -1,36 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
+import 'package:wave_desktop_installer/feature/pages/setting/setting_event.dart';
 import 'package:wave_desktop_installer/feature/pages/setting/setting_state.dart';
 import 'package:wave_desktop_installer/feature/pages/setting/setting_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/alignment_view.dart';
+import 'package:wave_desktop_installer/feature/widget/appbar/custom_app_bar.dart';
+import 'package:wave_desktop_installer/feature/widget/common_guide_button.dart';
+import 'package:wave_desktop_installer/main_view_model.dart';
+import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:yaru/theme.dart';
 import 'package:yaru/widgets.dart';
-
-// final webClientProvider = Provider.autoDispose<WebviewController>((ref) {
-//   return WebviewController();
-// });
-//
-// final alignmentProvider = StreamProvider.autoDispose<LoadingState>((ref) async* {
-//   final webClient = ref.watch(webClientProvider);
-//
-//   if (!webClient.value.isInitialized) {
-//     Log.d('webClient not isInitialized ->  Initializing Call');
-//     await initializeWebClient(webClient);
-//   }
-//   yield* webClient.loadingState;
-// });
-//
-// Future<void> initializeWebClient(WebviewController webClient) async {
-//   await webClient.initialize();
-//   await webClient.setPopupWindowPolicy(WebviewPopupWindowPolicy.allow);
-//   await webClient.loadUrl('http://192.168.8.1:8080/wave_stream.html');
-// }
 
 class SettingPage extends ConsumerStatefulWidget {
   const SettingPage({super.key});
@@ -41,7 +27,7 @@ class SettingPage extends ConsumerStatefulWidget {
 
 class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProviderStateMixin {
   final _viewModel = getIt<SettingViewModel>();
-
+  final _rootViewModel = getIt<MainViewModel>();
   final _controller = WebviewController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -49,8 +35,7 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    Log.d('SettingPage initState');
-
+    _viewModel.checkConnection();
     _viewModel.subscribeToMessages();
 
     _animationController = AnimationController(
@@ -72,17 +57,9 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
     _controller.dispose();
     _animationController.dispose();
     super.dispose();
-    Log.d('SettingPage disposed');
   }
 
   Future<void> initPlatformState() async {
-    // Optionally initialize the webview environment using
-    // a custom user data directory
-    // and/or a custom browser executable directory
-    // and/or custom chromium command line flags
-    //await WebviewController.initializeEnvironment(
-    //    additionalArguments: '--show-fps-counter');
-
     try {
       await _controller.initialize();
 
@@ -128,25 +105,28 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // body: ref.watch(alignmentProvider).when(
-        //       loading: () {
-        //         Log.d('WebView loading');
-        //         return const YaruLinearProgressIndicator(
-        //           color: YaruColors.blue,
-        //         );
-        //       },
-        //       error: (err, stack) => ErrorWidget(err),
-        //       data: (state) {
-        //         Log.d('WebView state: $state');
-        //         if (state == LoadingState.none || state == LoadingState.loading) {
-        //           return const YaruLinearProgressIndicator(
-        //             color: YaruColors.blue
-        //           );
-        //         }
-        //         _animationController.forward();
-        //'WebView LoadSuccess!!!!!!!!!!!!!!! ${_controller.value.isInitialized}'ody: _buildWebView(),
-      body: _buildWebView(),
-        );
+      body: Column(
+        children: [
+          const Gap(54),
+          const Text('WAVE Alignment Setting', style: WaveTextStyles.headline4Bold),
+          _viewModel.settingUiEvent.ui(builder: (context, state) {
+            if (!state.hasData || state.data.isNullOrEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            if (state.data is DeviceNotConnected) {
+              return CommonGuideButton.onlyWifiGuide(
+                onTap: () => _rootViewModel.navigateToConnectionPage(),
+              );
+            } else if (state.data is DeviceConnected) {
+              return Expanded(child: _buildWebView());
+            }
+
+            return const SizedBox.shrink();
+          }),
+        ],
+      ),
+    );
   }
 
   Widget _buildWebView() {

@@ -30,7 +30,6 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
   @override
   void initState() {
-    Log.d("FirmwareUpdatePage initState!!");
     super.initState();
     _viewModel.setConnectionMode(ref.read(connectionModeProvider));
     _viewModel.subscribeToStatuses();
@@ -39,7 +38,6 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
   @override
   void dispose() {
-    Log.d("FirmwareUpdatePage dispose!!");
     _viewModel.dispose();
     super.dispose();
   }

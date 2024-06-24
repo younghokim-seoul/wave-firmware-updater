@@ -92,12 +92,7 @@ class FirmwareUpdateViewModel {
   }
 
   void checkFirmwareVersion() async {
-    Log.i('[checkFirmwareVersion]' +
-        _fwupdService.status.toString() +
-        " | isCloed " +
-        isClosed.toString() +
-        " | connectionMode " +
-        connectionMode.toString());
+    Log.i('[checkFirmwareVersion]${_fwupdService.status} | isCloned $isClosed | connectionMode $connectionMode');
 
     rememberLatestState();
 
@@ -137,7 +132,7 @@ class FirmwareUpdateViewModel {
           }
         }
       } catch (e) {
-        Log.e("[installFirmware] error... $e");
+        Log.e('[installFirmware] error... $e');
         loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail));
       }
     }

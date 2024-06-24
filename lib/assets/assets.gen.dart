@@ -57,6 +57,10 @@ class $AssetsIconsGen {
   AssetGenImage get iconWaveToolsScan =>
       const AssetGenImage('assets/icons/Icon_WaveTools_Scan.png');
 
+  /// File path: assets/icons/Icon_WaveTools_Wifi_01.png
+  AssetGenImage get iconWaveToolsWifi01 =>
+      const AssetGenImage('assets/icons/Icon_WaveTools_Wifi_01.png');
+
   /// File path: assets/icons/Icon_bluetooth_disable.png
   AssetGenImage get iconBluetoothDisable =>
       const AssetGenImage('assets/icons/Icon_bluetooth_disable.png');
@@ -99,6 +103,7 @@ class $AssetsIconsGen {
         iconWaveToolsAlert,
         iconWaveToolsRefresh,
         iconWaveToolsScan,
+        iconWaveToolsWifi01,
         iconBluetoothDisable,
         iconBluetoothEnable,
         iconWave,

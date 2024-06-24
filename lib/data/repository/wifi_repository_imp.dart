@@ -6,7 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:tcp_client/tcp_client.dart';
 import 'package:wave_desktop_installer/data/connection_status.dart';
 import 'package:wave_desktop_installer/data/exception/connection_exception.dart';
-import 'package:wave_desktop_installer/data/wifi_scanner.dart';
+import 'package:wave_desktop_installer/data/system_wifi.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
@@ -23,7 +23,7 @@ class WifiRepositoryImp extends WifiRepository {
 
   final TcpClientRepository _clientRepository;
 
-  final WifiScanner _wifiScanWindows;
+  final SystemWifiUtils _wifiScanWindows;
 
   final Duration _period;
 

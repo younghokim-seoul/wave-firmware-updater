@@ -26,7 +26,6 @@ class ConnectionViewModel {
 
   ConnectionMode _connectionMode = ConnectionMode.wifi;
 
-
   Future<void> subscribeToConnection() async {
     if (_connectionMode == ConnectionMode.wifi) {
       _subscribeToWifiConnectionStatus();
