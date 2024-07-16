@@ -10,13 +10,11 @@ class ResponseParseException implements Exception {
 
 WaveSensorResponse parseResponse(String data) {
   try {
-
-    print("parseResponse... " + data);
     if (data.isValidPacket()) {
       String content = data.substring(stx.length, data.indexOf(tail)).replaceAll(', ', ',');
+
       final values = content.split(' ').skip(1).toList();
 
-      print("content... " + content);
       if (content.startsWith(heartBeatPrefix)) {
         final heartBeatInfo = values[0].split(',');
 
@@ -34,6 +32,12 @@ WaveSensorResponse parseResponse(String data) {
         );
       }
 
+      if (content.startsWith(swVer)) {
+        final verCode = values.first.replaceAll('.', '');
+        print(":::::verCode... " + verCode);
+        return FirmwareVersionResponse(verCode: verCode);
+      }
+
       if (content.startsWith('SET')) {
         final status = data.status();
         return FirmwareDownloadModeResponse(status: status == 'OK');
@@ -43,8 +47,8 @@ WaveSensorResponse parseResponse(String data) {
         final response = data.downloadData().split(',');
 
         if (response.length < 3) {
-           //파일다운로드 완료후.. 파일 유효성 체크할 차례 이과정에서 통과하면 마무리
-        } else{
+          //파일다운로드 완료후.. 파일 유효성 체크할 차례 이과정에서 통과하면 마무리
+        } else {
           final status = response[1];
           final pageNum = int.parse(response[2]);
 
@@ -52,7 +56,6 @@ WaveSensorResponse parseResponse(String data) {
           //그럼 다시 3번을 보내야하잖아..
           return FirmwareDownloadingResponse(status: status == 'OK', pageNum: pageNum);
         }
-
       }
     }
     return WaveSensorUnknownResponse(data: data);

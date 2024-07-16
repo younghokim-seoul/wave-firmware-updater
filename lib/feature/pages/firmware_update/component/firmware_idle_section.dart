@@ -8,10 +8,12 @@ import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 class FirmwareIdleSection extends ConsumerWidget {
   const FirmwareIdleSection({
     super.key,
+    required this.currentVersion,
     required this.onInstallTap,
   });
 
   final VoidCallback onInstallTap;
+  final String currentVersion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,14 +28,18 @@ class FirmwareIdleSection extends ConsumerWidget {
               _buildInstallButton(),
             ],
           ),
-          const Gap(38),
-          const Text(
-            '최신 버전으로 펌웨어 업데이트를 진행하세요.',
-            style: WaveTextStyles.commentHeaderBold,
+          const Gap(11),
+          Container(
+            height: 100,
+            alignment: Alignment.bottomCenter,
+            child: const Text(
+              '최신 버전으로 펌웨어 업데이트를 진행하세요.',
+              style: WaveTextStyles.commentHeaderBold,
+            ),
           ),
-          const Gap(20),
-          const Text(
-            'WAVE Firmware Ver. 0.55.12.194',
+          const Gap(15),
+          Text(
+            'WAVE Firmware Ver. $currentVersion',
             style: WaveTextStyles.commentBold,
           )
         ],

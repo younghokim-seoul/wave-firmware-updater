@@ -59,6 +59,10 @@ class YaruColors {
   /// Cool grey can also be used within charts and diagrams.
   static const Color coolGrey = Color(0xFF4D4D4D);
 
+
+  static const Color coolGreen = Color(0xFF7CD127);
+  static const Color coolDarkGrey = Color(0xFF676262);
+
   /// Text Grey
   ///
   /// Text grey is used for small size headings, sub-headings and body copy text

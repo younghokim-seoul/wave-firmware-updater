@@ -8,6 +8,13 @@ sealed class ConnectionEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class NearByDeviceNotFound extends ConnectionEvent {
+  const NearByDeviceNotFound();
+}
+
+class NearByDevicesHelp extends ConnectionEvent {
+  const NearByDevicesHelp();
+}
 
 class NearByDevicesRequested extends ConnectionEvent {
   const NearByDevicesRequested();

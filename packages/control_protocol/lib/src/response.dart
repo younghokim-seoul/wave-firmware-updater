@@ -47,6 +47,17 @@ class WaveSensorHeartBeatResponse extends WaveSensorResponse {
       ];
 }
 
+class FirmwareVersionResponse extends WaveSensorResponse {
+  const FirmwareVersionResponse({
+    required this.verCode,
+  });
+
+  final String verCode;
+
+  @override
+  List<Object?> get props => [verCode];
+}
+
 class FirmwareDownloadModeResponse extends WaveSensorResponse {
   const FirmwareDownloadModeResponse({
     required this.status,

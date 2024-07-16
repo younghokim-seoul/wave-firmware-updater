@@ -14,19 +14,19 @@ import 'package:tcp_client/tcp_client.dart' as _i6;
 
 import '../data/fwupd/fwupd_imp.dart' as _i16;
 import '../data/fwupd/fwupd_service.dart' as _i15;
-import '../data/network/api_service.dart' as _i13;
+import '../data/network/api_service.dart' as _i12;
 import '../data/repository/ble_repository_imp.dart' as _i8;
-import '../data/repository/patch_repository_imp.dart' as _i12;
+import '../data/repository/patch_repository_imp.dart' as _i11;
 import '../data/repository/wifi_repository_imp.dart' as _i5;
 import '../data/system_wifi.dart' as _i3;
 import '../domain/repository/bluetooth_repository.dart' as _i7;
-import '../domain/repository/patch_repository.dart' as _i11;
+import '../domain/repository/patch_repository.dart' as _i10;
 import '../domain/repository/wifi_repository.dart' as _i4;
 import '../feature/pages/connection/connection_view_model.dart' as _i9;
 import '../feature/pages/firmware_update/firmware_update_view_model.dart'
     as _i17;
-import '../feature/pages/setting/setting_view_model.dart' as _i14;
-import '../main_view_model.dart' as _i10;
+import '../feature/pages/setting/setting_view_model.dart' as _i13;
+import '../main_view_model.dart' as _i14;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i1.GetIt $initGetIt(
@@ -49,20 +49,21 @@ _i1.GetIt $initGetIt(
         gh<_i4.WifiRepository>(),
         gh<_i7.BluetoothRepository>(),
       ));
-  gh.lazySingleton<_i10.MainViewModel>(() => _i10.MainViewModel(
+  gh.lazySingleton<_i10.PatchRepository>(
+      () => _i11.PatchRepositoryImp(gh<_i12.ApiService>()));
+  gh.factory<_i13.SettingViewModel>(
+      () => _i13.SettingViewModel(gh<_i4.WifiRepository>()));
+  gh.lazySingleton<_i14.MainViewModel>(() => _i14.MainViewModel(
         gh<_i4.WifiRepository>(),
         gh<_i7.BluetoothRepository>(),
+        gh<_i10.PatchRepository>(),
       ));
-  gh.lazySingleton<_i11.PatchRepository>(
-      () => _i12.PatchRepositoryImp(gh<_i13.ApiService>()));
-  gh.factory<_i14.SettingViewModel>(
-      () => _i14.SettingViewModel(gh<_i4.WifiRepository>()));
   gh.lazySingleton<_i15.FwupdService>(
       () => _i16.FwupdImp(gh<_i7.BluetoothRepository>()));
   gh.factory<_i17.FirmwareUpdateViewModel>(() => _i17.FirmwareUpdateViewModel(
         gh<_i4.WifiRepository>(),
         gh<_i7.BluetoothRepository>(),
-        gh<_i11.PatchRepository>(),
+        gh<_i10.PatchRepository>(),
         gh<_i15.FwupdService>(),
       ));
   return getIt;

@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tcp_client/tcp_client.dart';
 import 'package:wave_desktop_installer/data/network/api_client.dart';
 import 'package:wave_desktop_installer/data/network/api_service.dart';
@@ -28,8 +27,6 @@ Future<void> $initGetIt(
   EnvironmentFilter? environmentFilter,
 }) async {
   final gh = GetItHelper(getIt, environment.toString());
-
-  final sharedPreferences = await SharedPreferences.getInstance();
 
   await WinBle.initialize(serverPath: await WinServer.path(), enableLog: !kReleaseMode);
 

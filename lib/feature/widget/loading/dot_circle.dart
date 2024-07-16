@@ -1,11 +1,17 @@
 import 'dart:math' as math show sin, pi;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:gap/gap.dart';
+import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
+
+enum SpinKitFadingCircleType { small, large }
 
 class SpinKitFadingCircle extends StatefulWidget {
   const SpinKitFadingCircle({
     required this.size,
+    required this.type,
     this.color,
+    this.label,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
@@ -17,25 +23,31 @@ class SpinKitFadingCircle extends StatefulWidget {
 
   const SpinKitFadingCircle.medium({
     this.color = Colors.white,
+    this.label,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
     super.key,
-  }) : size = 50.0;
+  })  : size = 50.0,
+        type = SpinKitFadingCircleType.small;
 
   const SpinKitFadingCircle.large({
     this.color = Colors.white,
+    this.label,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
     super.key,
-  }) : size = 160.0;
+  })  : size = 160.0,
+        type = SpinKitFadingCircleType.large;
 
   final Color? color;
   final double size;
   final IndexedWidgetBuilder? itemBuilder;
   final Duration duration;
+  final String? label;
   final AnimationController? controller;
+  final SpinKitFadingCircleType type;
 
   @override
   State<SpinKitFadingCircle> createState() => _SpinKitFadingCircleState();
@@ -64,36 +76,53 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SizedBox.fromSize(
-        size: Size.square(widget.size),
-        child: Stack(
-          children: List.generate(_itemCount, (i) {
-            final position = widget.size * .5;
-            return Positioned.fill(
-              left: position,
-              top: position,
-              child: Transform(
-                transform: Matrix4.rotationZ(30.0 * i * 0.0174533),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: FadeTransition(
-                    opacity: DelayTween(
-                      begin: 0.0,
-                      end: 1.0,
-                      delay: i / _itemCount,
-                    ).animate(_controller),
-                    child: SizedBox.fromSize(
-                      size: Size.square(widget.size / 1.5 * 0.15),
-                      child: _itemBuilder(i),
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox.fromSize(
+          size: Size.square(widget.size),
+          child: Stack(
+            children: List.generate(_itemCount, (i) {
+              final position = widget.size * .5;
+              return Positioned.fill(
+                left: position,
+                top: position,
+                child: Transform(
+                  transform: Matrix4.rotationZ(30.0 * i * 0.0174533),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: FadeTransition(
+                      opacity: DelayTween(
+                        begin: 0.0,
+                        end: 1.0,
+                        delay: i / _itemCount,
+                      ).animate(_controller),
+                      child: SizedBox.fromSize(
+                        size: Size.square(widget.size / 1.5 * 0.15),
+                        child: _itemBuilder(i),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
-      ),
-    );
+        _labelBuilder(),
+      ],
+    ));
+  }
+
+  Widget _labelBuilder() {
+    return widget.type == SpinKitFadingCircleType.large
+        ? Column(children: [
+            const Gap(58),
+            Text(
+              widget.label ?? '',
+              style: WaveTextStyles.buttonLargeBold,
+            ),
+          ])
+        : const SizedBox.shrink();
   }
 
   Widget _itemBuilder(int index) => widget.itemBuilder != null

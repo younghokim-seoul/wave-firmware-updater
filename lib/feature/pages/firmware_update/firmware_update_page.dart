@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/scan_section.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/connection_request_section.dart';
+import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_already_latest_version_section.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_complete_section.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_download_section.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_error_section.dart';
@@ -30,6 +31,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
   @override
   void initState() {
+    Log.d("화면 진입한데이!!!!!!!!!!!!!!!!!!!!!!");
     super.initState();
     _viewModel.setConnectionMode(ref.read(connectionModeProvider));
     _viewModel.subscribeToStatuses();
@@ -45,7 +47,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: SizedBox(
         width: getScreenWidth(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -63,26 +65,44 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                 }
 
                 if (state.data is FirmwareVersionInfoRequested) {
-                  return const Expanded(child: Center(child: SpinKitFadingCircle.large()));
+                  return const Expanded(
+                      child: Center(
+                          child: SpinKitFadingCircle.large(
+                    label: '업데이트 확인 중...',
+                  )));
                 }
 
                 if (state.data is FirmwareVersionInfoReceived) {
-                  return FirmwareIdleSection(onInstallTap: () => _viewModel.installFirmware());
+                  final data = state.data as FirmwareVersionInfoReceived;
+                  return FirmwareIdleSection(
+                      currentVersion: data.currentVersion, onInstallTap: () => _viewModel.installFirmware());
                 }
 
                 if (state.data is FirmwareDownloadProgress) {
                   return FirmwareDownloadSection(viewModel: _viewModel);
                 }
 
-                if (state.data is FirmwareDownloadComplete) {
-                  return FirmwareCompleteSection(onTap: () {
-                    _viewModel.checkFirmwareVersion();
-                  });
+                if (state.data is FirmwareAlreadyLatestVersion) {
+                  return FirmwareAlreadyLatestVersionSection(
+                    currentVersion: (state.data as FirmwareAlreadyLatestVersion).currentVersion,
+                  );
                 }
 
                 if (state.data is FirmwareErrorNotify) {
-                  final errorType = (state.data as FirmwareErrorNotify).error;
-                  return FirmwareErrorSection(errorType: errorType);
+                  final data = (state.data as FirmwareErrorNotify);
+                  return Flexible(
+                    child: FirmwareErrorSection(
+                      errorType: data.error,
+                      errorCode: data.code,
+                      onRetryCallback: () {
+                        _viewModel.checkFirmwareVersion();
+                      },
+                    ),
+                  );
+                }
+
+                if (state.data is FirmwareDownloadComplete) {
+                  return FirmwareCompleteSection(onTap: () => _viewModel.checkFirmwareVersion());
                 }
 
                 return Container();

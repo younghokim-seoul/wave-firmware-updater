@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:control_protocol/control_protocol.dart';
 import 'package:injectable/injectable.dart';
+import 'package:wave_desktop_installer/data/exception/response_code.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
+import 'package:wave_desktop_installer/data/network/token/token_manager.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
+import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/patch_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
@@ -13,6 +16,8 @@ import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_up
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
+
+import '../../../data/connection_status.dart';
 
 @injectable
 class FirmwareUpdateViewModel {
@@ -36,55 +41,54 @@ class FirmwareUpdateViewModel {
   final percentage = ArcSubject<double>(seed: 0.0);
   StreamSubscription? _statusesSubscription;
 
+
+  FirmwareVersion? _firmwareVersion;
+
   void setConnectionMode(ConnectionMode mode) {
     connectionMode = mode;
   }
 
   Future<void> subscribeToStatuses() async {
-    Log.i(":::::: subscribeToMessages");
+    _statusesSubscription ??= _wifiRepository.statuses.listen(
+      (state) {
+        Log.i('::::: wifi 연결상태 콜백 $state ${_fwupdService.status}');
+        if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.complete) {
+          loadState(const FirmwareDownloadComplete());
+        }
 
-    if (connectionMode == ConnectionMode.wifi) {
-      _statusesSubscription ??= _wifiRepository.statuses.listen(
-        (state) {
-          Log.i('::::: wifi 연결상태 콜백 $state');
-          rememberLatestState();
-        },
-        onDone: () {
-          Log.i('::::: subscribeToMessages onDone');
-        },
-      );
-    } else {
-      _statusesSubscription ??= _bleRepository.statuses.listen(
-        (state) {
-          Log.i('::::: bluetooth 연결상태 콜백 ${state.state} ${state.address}');
-          rememberLatestState();
-        },
-        onDone: () {
-          Log.i('::::: subscribeToMessages onDone');
-        },
-      );
-    }
+        if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.downloading) {
+          loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail,code: ErrorCode.uploadFail));
+        }
+        if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.idle) {
+          loadState(const DeviceNotConnected());
+        }
+      },
+    );
   }
 
-  Future<void> _unsubscribeFromStatuses() async {
-    Log.i(":::::: _unsubscribeFromStatuses");
+  Future<void> _unsubscribeSubscription() async {
     await _statusesSubscription?.cancel();
     _statusesSubscription = null;
   }
 
-  rememberLatestState() {
+  _changeLatestStatus() {
     if (isClosed) {
       Log.i("not connected Device");
       loadState(const DeviceNotConnected());
       return;
     }
 
-    Log.i("addFirmWareChannelListener");
+    if (_fwupdService.status == FwupdStatus.downloading) {
+      loadState(FirmwareDownloadProgress(downloadProgress: _fwupdService.percentage));
+    }
+  }
+
+  registerPercentageCallback() {
     _fwupdService.addFirmWareChannelListener(
       FirmWareChannelListener(
         onPercentageChanged: (progress) {
           Log.d('[ViewModel Receive] onPercentageChanged $progress');
-          if(percentage.subject.isClosed)return;
+          if (percentage.subject.isClosed) return;
           percentage.val = progress;
         },
       ),
@@ -92,60 +96,70 @@ class FirmwareUpdateViewModel {
   }
 
   void checkFirmwareVersion() async {
-    Log.i('[checkFirmwareVersion]${_fwupdService.status} | isCloned $isClosed | connectionMode $connectionMode');
+    Log.i('[checkFirmwareVersion] ${_fwupdService.status} | isCloned $isClosed | connectionMode $connectionMode');
 
-    rememberLatestState();
+    _changeLatestStatus();
+    registerPercentageCallback();
 
     if (_fwupdService.status != FwupdStatus.idle || isClosed) {
       Log.i('checkFirmwareVersion status is not idle or not connected Device');
       return;
     }
+
     try {
       loadState(const FirmwareVersionInfoRequested());
-      final response = await _patchRepository.fetchPatchDetails();
-      Log.i('[checkFirmwareUpdate] response $response');
+      _firmwareVersion = await _patchRepository.fetchPatchDetails();
 
-      //todo : 최신 버전 체크 과 다운로드 분기처리 필요
-      loadState(FirmwareVersionInfoReceived(data: response));
+      final response = await _wifiRepository.send(VersionDataRequest().rawBytes, timeout: const Duration(seconds: 5));
+
+      if(response is FirmwareVersionResponse){
+        final serverVersion = int.parse(_firmwareVersion!.versionNumber.replaceAll('.', ''));
+        final deviceVersion = int.parse(response.verCode);
+
+        Log.d('serverVersion: $serverVersion, deviceVersion: $deviceVersion');
+
+        if (serverVersion > deviceVersion) {
+          loadState(FirmwareVersionInfoReceived(data: _firmwareVersion!, currentVersion: response.verCode));
+        } else {
+          loadState(FirmwareAlreadyLatestVersion(currentVersion: response.verCode));
+        }
+      }
     } catch (e) {
       Log.e('[checkFirmwareUpdate] error: $e');
-      loadState(const FirmwareVersionInfoReceived(data: null));
+      loadState(const FirmwareErrorNotify(error: FirmwareError.serverDownloadFail,code: ErrorCode.deviceTimeout));
     }
   }
 
   void installFirmware() async {
-    //todo : 블루투스와  WIFI 분기처리 필요..
     if (firmwareUiEvent.val is FirmwareVersionInfoReceived) {
       try {
         final firmwareVersion = (firmwareUiEvent.val as FirmwareVersionInfoReceived).data;
 
         if (!firmwareVersion.isNullOrEmpty) {
           loadState(const FirmwareDownloadProgress(downloadProgress: null));
-          if (connectionMode == ConnectionMode.bluetooth) {
-            await _fwupdService.bluetoothInstall(firmwareVersion!);
-            await _bleRepository.send(RebootDataRequest().getRawBytes());
-            loadState(const FirmwareDownloadComplete());
-          } else {
-            await _fwupdService.wifiInstall(firmwareVersion!);
-            await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
-           loadState(const FirmwareDownloadComplete());
-          }
+          await _fwupdService.wifiInstall(firmwareVersion!);
+          await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
+          loadState(const FirmwareDownloadComplete());
         }
       } catch (e) {
         Log.e('[installFirmware] error... $e');
-        loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail));
+        loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail,code: ErrorCode.uploadFail));
       }
     }
   }
 
   void loadState(state) {
-    if(firmwareUiEvent.subject.isClosed)return;
+    if (firmwareUiEvent.subject.isClosed) {
+      return;
+    }
     firmwareUiEvent.val = state;
   }
 
   void dispose() {
+    CancelTokenManager.cancelAll();
     firmwareUiEvent.close();
     percentage.close();
-    _unsubscribeFromStatuses();
+    _fwupdService.reboot();
+    _unsubscribeSubscription();
   }
 }

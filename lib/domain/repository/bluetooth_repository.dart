@@ -18,9 +18,12 @@ abstract class BluetoothRepository {
 
   Future<void> stopScan();
 
+
   Future<WaveSensorResponse> send(Uint8List event);
 
   Future<void> startOTA(File file,FileProgress progress);
+
+  Future<void> failOTA();
 
   Future<WaveSensorResponse> transferBinaryData({String serviceId = Const.waveServiceUuid, String characteristicId = Const.waveWriteUuid});
 

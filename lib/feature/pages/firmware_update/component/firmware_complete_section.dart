@@ -28,7 +28,7 @@ class FirmwareCompleteSection extends ConsumerWidget {
           ),
           const Gap(44),
           CommonButton(
-            title: Text(
+            title: const Text(
               '확인',
               style: WaveTextStyles.buttonLarge,
             ),

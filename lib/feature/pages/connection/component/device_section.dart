@@ -29,7 +29,7 @@ class DeviceSection extends ConsumerStatefulWidget {
 
   final ScanUiModel item;
   final Function(ScanUiModel, bool) onExpandedChanged;
-  final Function(ScanUiModel,ConnectionStatus) onConnectionRequest;
+  final Function(ScanUiModel, ConnectionStatus) onConnectionRequest;
 
   @override
   ConsumerState createState() => _DeviceSectionState();
@@ -74,23 +74,21 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
           children: [
             ExpandablePanel(
               theme: const ExpandableThemeData(
-                headerAlignment: ExpandablePanelHeaderAlignment.center,
-                tapBodyToExpand: true,
-                tapBodyToCollapse: true,
-                hasIcon: false, crossFadePoint: 0
-              ),
+                  headerAlignment: ExpandablePanelHeaderAlignment.center,
+                  tapBodyToExpand: true,
+                  tapBodyToCollapse: true,
+                  hasIcon: false,
+                  crossFadePoint: 0),
               header: Container(
                 color: _getDeviceStateAndExpansionColor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 child: Row(children: [
                   const Gap(15),
-                  SizedBox.square(
-                      dimension: 70, child: Assets.icons.iconWave.image()),
+                  SizedBox.square(dimension: 70, child: Assets.icons.iconWave.image()),
                   Expanded(
                     child: Text(
                       widget.item.model.deviceName,
-                      style: WaveTextStyles.listTitle1
-                          .copyWith(color: _getDeviceStateColor),
+                      style: WaveTextStyles.listTitle1.copyWith(color: _getDeviceStateColor),
                     ).marginOnly(bottom: 4),
                   ),
                   _getDeviceStateIcon,
@@ -108,6 +106,7 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
 
   Color get _getDeviceStateAndExpansionColor {
     if (widget.item.status == ConnectionStatus.connected ||
+        widget.item.status == ConnectionStatus.connecting ||
         widget.item.isExpanded) {
       return YaruColors.kubuntuBlue;
     } else {
@@ -116,7 +115,7 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
   }
 
   Color get _getDeviceStateColor {
-    if(widget.item.isExpanded){
+    if (widget.item.isExpanded) {
       switch (widget.item.status) {
         case ConnectionStatus.connected:
           return Colors.white;
@@ -124,10 +123,9 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
         case ConnectionStatus.disconnected:
           return YaruColors.coolGrey;
       }
-    }else{
+    } else {
       return Colors.white;
     }
-
   }
 
   Widget get _getDeviceStateIcon {
@@ -164,15 +162,14 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
           BounceGray(
             child: Container(
               width: 160,
-              decoration: const BoxDecoration(
-                  color: YaruColors.selectBarHighlightColor),
+              decoration: const BoxDecoration(color: YaruColors.selectBarHighlightColor),
               child: Text(
                 statusTitles[widget.item.status] ?? '',
                 style: WaveTextStyles.body1,
                 textAlign: TextAlign.center,
               ).paddingSymmetric(vertical: 8),
             ),
-            onTap: () => widget.onConnectionRequest.call(widget.item,widget.item.status),
+            onTap: () => widget.onConnectionRequest.call(widget.item, widget.item.status),
           )
         ],
       ).paddingSymmetric(vertical: 10, horizontal: 12),

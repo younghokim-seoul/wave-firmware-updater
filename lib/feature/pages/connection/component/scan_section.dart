@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
@@ -18,23 +19,33 @@ class ScanSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CustomSlidingSegmentedControl<ConnectionMode>(
-      initialValue: ConnectionMode.wifi,
+      initialValue: ref.read(connectionModeProvider),
       isStretch: true,
       children: {
         ConnectionMode.wifi: SizedBox(
           width: double.infinity,
           height: 60,
-          child: Row(
+          child: Stack(
             children: [
-              Assets.icons.iconWifiEnable.image(width: 60),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Wi-Fi',
-                    style: WaveTextStyles.sideMenuTitle.copyWith(color: Colors.white),
-                  ),
+              Positioned.fill(
+                child: Row(
+                  children: [
+                    SizedBox.square(
+                      dimension: 60,
+                      child: Assets.icons.iconWifiEnable.image(height: 60),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          'Wi-Fi',
+                          style: WaveTextStyles.sideMenuTitle.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const Gap(34),
+                  ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -43,6 +54,7 @@ class ScanSection extends ConsumerWidget {
           height: 60,
           child: Row(
             children: [
+              const Gap(34),
               Expanded(
                 child: Center(
                   child: Text(
@@ -51,7 +63,10 @@ class ScanSection extends ConsumerWidget {
                   ),
                 ),
               ),
-              Assets.icons.iconBluetoothEnable.image(width: 60),
+              SizedBox.square(
+                dimension: 60,
+                child: Assets.icons.iconBluetoothEnable.image(height: 60),
+              ),
             ],
           ),
         ),
@@ -79,8 +94,9 @@ class ScanSection extends ConsumerWidget {
       curve: Curves.easeOutCubic,
       onValueChanged: (v) {
         Log.d("Selected $v");
+        if (v == ref.read(connectionModeProvider)) return;
         ref.watch(connectionModeProvider.notifier).state = v;
-        connectionViewModel.startScan(v);
+        connectionViewModel.startScan();
       },
     );
   }

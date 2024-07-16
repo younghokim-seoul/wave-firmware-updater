@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yaru/constants.dart';
 import 'package:yaru/theme.dart';
 
 const double _kScrollbarThickness = 8.0;
@@ -7,15 +6,28 @@ const double _kScrollbarMargin = 2.0;
 const Duration _kSelectedTileAnimationDuration = Duration(milliseconds: 250);
 const double _kItemHeight = 106.0;
 
-/// Provides the recommended layout for [YaruMasterDetailPage.tileBuilder].
-///
-/// This widget is structurally similar to [ListTile].
+enum MenuType {
+  scan(0),
+  firmware(1),
+  alignment(2);
+
+  const MenuType(
+    this.code,
+  );
+
+  final int code;
+
+  factory MenuType.fromCode(int code) => values.singleWhere((e) => code == e.code, orElse: () => MenuType.scan);
+}
+
 class YaruMasterTile extends StatelessWidget {
   const YaruMasterTile({
     super.key,
     this.selected,
     this.leading,
+    this.isAvailableUpdate,
     required this.title,
+    required this.index,
     this.subtitle,
     this.trailing,
     this.onTap,
@@ -40,6 +52,10 @@ class YaruMasterTile extends StatelessWidget {
   /// If not provided [YaruMasterTileScope] `onTap` will be called.
   final VoidCallback? onTap;
 
+  final int index;
+
+  final bool? isAvailableUpdate;
+
   @override
   Widget build(BuildContext context) {
     final scope = YaruMasterTileScope.maybeOf(context);
@@ -51,8 +67,7 @@ class YaruMasterTile extends StatelessWidget {
       child: AnimatedContainer(
         duration: _kSelectedTileAnimationDuration,
         decoration: BoxDecoration(
-          color:
-              isSelected ? YaruColors.blue : YaruColors.selectBarHighlightColor,
+          color: isSelected ? YaruColors.blue : YaruColors.selectBarHighlightColor,
         ),
         child: InkWell(
           onTap: () {
@@ -63,6 +78,7 @@ class YaruMasterTile extends StatelessWidget {
             }
           },
           child: SizedBox(
+            width: double.infinity,
             height: _kItemHeight,
             child: Stack(
               children: [
@@ -80,12 +96,28 @@ class YaruMasterTile extends StatelessWidget {
                   right: 0,
                   bottom: 0,
                   top: 0,
-                  child: Center(
-                      child : _titleStyle(context, title) ?? const SizedBox.shrink()
-                  ),
+                  child: Center(child: _titleStyle(context, title) ?? const SizedBox.shrink()),
                 ),
+                _buildAlert(context, index,isAvailableUpdate ?? false),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlert(BuildContext context, int index,bool isUpdate) {
+    return Visibility(
+      visible: MenuType.fromCode(index) == MenuType.firmware && isUpdate,
+      child: Positioned(
+        right: 4,
+        top: 4,
+        child: SizedBox.square(
+          dimension: 26,
+          child: Image.asset(
+            'assets/icons/Icon_Alert.png',
+            filterQuality: FilterQuality.high,
           ),
         ),
       ),
@@ -120,13 +152,10 @@ class YaruMasterTile extends StatelessWidget {
   double _calcScrollbarThicknessWithTrack(final BuildContext context) {
     final scrollbarTheme = Theme.of(context).scrollbarTheme;
 
-    final doubleMarginWidth = scrollbarTheme.crossAxisMargin != null
-        ? scrollbarTheme.crossAxisMargin! * 2
-        : _kScrollbarMargin * 2;
+    final doubleMarginWidth =
+        scrollbarTheme.crossAxisMargin != null ? scrollbarTheme.crossAxisMargin! * 2 : _kScrollbarMargin * 2;
 
-    final scrollBarThumbThikness =
-        scrollbarTheme.thickness?.resolve({WidgetState.hovered}) ??
-            _kScrollbarThickness;
+    final scrollBarThumbThikness = scrollbarTheme.thickness?.resolve({WidgetState.hovered}) ?? _kScrollbarThickness;
 
     return doubleMarginWidth + scrollBarThumbThikness;
   }

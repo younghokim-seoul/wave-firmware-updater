@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:wave_desktop_installer/data/exception/response_code.dart';
 import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_error_section.dart';
 
@@ -9,6 +10,15 @@ sealed class FirmwareUpdateEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class FirmwareAlreadyLatestVersion extends FirmwareUpdateEvent {
+  const FirmwareAlreadyLatestVersion({required this.currentVersion});
+
+  final String currentVersion;
+
+  @override
+  List<Object?> get props => [currentVersion];
+}
+
 class DeviceNotConnected extends FirmwareUpdateEvent {
   const DeviceNotConnected();
 
@@ -17,8 +27,6 @@ class DeviceNotConnected extends FirmwareUpdateEvent {
 }
 
 class FirmwareVersionInfoRequested extends FirmwareUpdateEvent {
-
-
   const FirmwareVersionInfoRequested();
 
   @override
@@ -26,14 +34,16 @@ class FirmwareVersionInfoRequested extends FirmwareUpdateEvent {
 }
 
 class FirmwareVersionInfoReceived extends FirmwareUpdateEvent {
-  final FirmwareVersion? data;
+  final FirmwareVersion data;
+  final String currentVersion;
 
   const FirmwareVersionInfoReceived({
     required this.data,
+    required this.currentVersion
   });
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [data,currentVersion];
 }
 
 class FirmwareDownloadProgress extends FirmwareUpdateEvent {
@@ -48,8 +58,6 @@ class FirmwareDownloadProgress extends FirmwareUpdateEvent {
 }
 
 class FirmwareDownloadComplete extends FirmwareUpdateEvent {
-
-
   const FirmwareDownloadComplete();
 
   @override
@@ -57,10 +65,10 @@ class FirmwareDownloadComplete extends FirmwareUpdateEvent {
 }
 
 class FirmwareErrorNotify extends FirmwareUpdateEvent {
-
   final FirmwareError error;
+  final ErrorCode code;
 
-  const FirmwareErrorNotify({required this.error});
+  const FirmwareErrorNotify({required this.error,required this.code});
 
   @override
   List<Object?> get props => [error];

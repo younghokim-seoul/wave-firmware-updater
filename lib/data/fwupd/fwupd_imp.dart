@@ -74,9 +74,10 @@ class FwupdImp extends FwupdService {
       final fileSize = await patchFile.readAsBytes();
       Log.d("::::patchFile fileSize... ${fileSize.length}");
       await _installBinary(patchFile);
-      _currentState = FwupdStatus.idle;
+      _currentState = FwupdStatus.complete;
     } on Exception catch (e) {
       Log.e('::::install error... $e');
+      _setDownloadProgress(null);
       _currentState = FwupdStatus.idle;
       rethrow;
     }
@@ -95,9 +96,11 @@ class FwupdImp extends FwupdService {
         _setDownloadProgress(progress);
       });
       Log.d('::::블루투스 펌웨어 업데이트 완료....');
-      _currentState = FwupdStatus.idle;
+      _currentState = FwupdStatus.complete;
     } on Exception catch (e) {
       Log.e('::::install error... $e');
+      _bluetoothRepository.failOTA();
+      _setDownloadProgress(null);
       _currentState = FwupdStatus.idle;
       rethrow;
     }
@@ -133,9 +136,10 @@ class FwupdImp extends FwupdService {
   }
 
   @override
-  Future<void> reboot() {
-    // TODO: implement reboot
-    throw UnimplementedError();
+  Future<void> reboot() async {
+    if(_currentState == FwupdStatus.complete){
+      _currentState = FwupdStatus.idle;
+    }
   }
 
   @override

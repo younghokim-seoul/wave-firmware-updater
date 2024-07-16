@@ -30,8 +30,9 @@ abstract class WaveTextStyles {
 
   static const TextStyle headline5 = TextStyle(
     fontFamily: fontFamily,
-    fontWeight: FontWeight.w400,
-    fontSize: 26,
+    fontWeight: FontWeight.w700,
+    fontSize: 21,
+    color: YaruColors.commentTextLight,
   );
 
   static const TextStyle headline5Bold = TextStyle(
@@ -52,9 +53,8 @@ abstract class WaveTextStyles {
   static const TextStyle commentHeaderBold = TextStyle(
     fontFamily: fontFamily,
     fontWeight: FontWeight.w700,
-    fontSize: 28,
+    fontSize: 32,
     color: YaruColors.commentTextLight,
-    letterSpacing: 0.03,
   );
 
 
@@ -110,9 +110,10 @@ abstract class WaveTextStyles {
 
   static const TextStyle body1Bold = TextStyle(
     fontFamily: fontFamily,
-    fontWeight: FontWeight.w600,
-    fontSize: 17,
+    fontWeight: FontWeight.w700,
+    fontSize: 18,
     letterSpacing: 0.09,
+    color: Colors.white
   );
 
   static const TextStyle body2 = TextStyle(
@@ -141,17 +142,18 @@ abstract class WaveTextStyles {
 
   static const TextStyle buttonLargeBold = TextStyle(
     fontFamily: fontFamily,
-    fontWeight: FontWeight.w600,
-    fontSize: 17,
+    fontWeight: FontWeight.w700,
+    fontSize: 24,
     height: 1.41,
-    letterSpacing: 0.21,
+    color: YaruColors.commentTextLight,
   );
 
   static const TextStyle buttonMedium = TextStyle(
     fontFamily: fontFamily,
     fontWeight: FontWeight.w400,
-    fontSize: 14,
-    height: 1.14,
+    fontSize: 16,
+    height: 1.4,
+    color: Colors.white,
     letterSpacing: 0.17,
   );
 

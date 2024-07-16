@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
-import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/di/configurations.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/device_scan_view.dart';
-import 'package:wave_desktop_installer/feature/pages/connection/component/device_section.dart';
-import 'package:wave_desktop_installer/feature/pages/connection/component/scan_section.dart';
-import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/commom_button.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
-import 'package:wave_desktop_installer/utils/dev_log.dart';
-import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
-import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
-
-import '../../widget/loading/dot_circle.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
   const ConnectionPage({super.key});
@@ -27,12 +19,18 @@ class ConnectionPage extends ConsumerStatefulWidget {
 class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   final _viewModel = getIt<ConnectionViewModel>();
 
+
   @override
   void initState() {
     super.initState();
-    _viewModel.subscribeToConnection();
-    _viewModel.startScan(ref.read(connectionModeProvider));
+    _viewModel.startScan();
+
+
+    Future.delayed(const Duration(seconds: 1), () {
+      _viewModel.subscribeToConnection();
+    });
   }
+
 
   @override
   void dispose() {
@@ -48,11 +46,9 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Gap(30),
+            const Gap(54),
             const Text('WAVE Sensor Connection', style: WaveTextStyles.headline4Bold),
-            const Gap(30),
-            ScanSection(connectionViewModel: _viewModel),
-            const Gap(30),
+            const Gap(60),
             Expanded(
               child: DeviceScanView(connectionViewModel: _viewModel),
             )
@@ -69,7 +65,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                 'Rescan Nearby Devices',
                 style: WaveTextStyles.buttonLarge,
               ),
-              onTap: () => _viewModel.startScan(ref.read(connectionModeProvider)),
+              onTap: () => _viewModel.startScan(),
             ),
             const Gap(43),
           ],

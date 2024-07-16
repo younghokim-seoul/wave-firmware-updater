@@ -12,6 +12,7 @@ const String set ='SET FW DOWN,';
 const String etx ='\#\#';
 const tail = '%';
 const heartBeatPrefix = 'HB';
+const swVer = 'SWVER';
 const String varity ='GET FDATAVERI';
 const String welcome ='WELCOME';
 

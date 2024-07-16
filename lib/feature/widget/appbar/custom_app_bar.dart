@@ -14,9 +14,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.leading,
     this.title,
     this.actions,
-    this.padding = const EdgeInsets.symmetric(
-      horizontal: 4,
-    ),
+    this.padding = EdgeInsets.zero,
     super.key,
   });
 
@@ -122,9 +120,7 @@ class CustomAppBarState extends State<CustomAppBar> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children: widget.actions!
-                          .intersperse(const Gap(4))
-                          .toList(),
+                      children: widget.actions!.toList(),
                     ),
                   ),
               ],

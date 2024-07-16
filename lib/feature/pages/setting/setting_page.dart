@@ -76,56 +76,74 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
       setState(() {});
     } on PlatformException catch (e) {
       Log.e('Error creating WebView: $e');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  title: Text('Error'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Code: ${e.code}'),
-                      Text('Message: ${e.message}'),
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                    title: Text('Error'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Code: ${e.code}'),
+                        Text('Message: ${e.message}'),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        child: Text('Continue'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      )
                     ],
-                  ),
-                  actions: [
-                    TextButton(
-                      child: Text('Continue'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                ));
-      });
+                  ));
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          const Gap(54),
-          const Text('WAVE Alignment Setting', style: WaveTextStyles.headline4Bold),
-          _viewModel.settingUiEvent.ui(builder: (context, state) {
-            if (!state.hasData || state.data.isNullOrEmpty) {
-              return const SizedBox.shrink();
-            }
+      body: SizedBox(
+        width: double.infinity,
+        child: Column(
+          children: [
+            StreamBuilder<LoadingState>(
+                stream: _controller.loadingState,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data == LoadingState.loading) {
+                    return const YaruLinearProgressIndicator(color: YaruColors.titleBarLight,);
+                  } else {
+                    Log.d("snapshot.data " + snapshot.data.toString());
+                    _animationController.forward();
+                    return const SizedBox.shrink();
+                  }
+                }),
+            const Gap(54),
+            const Text('WAVE Alignment Setting', style: WaveTextStyles.headline4Bold),
+            const Gap(36),
+            const Text('아래의 기준선에 맞춰 WAVE Radar의 위치를 조정하세요.', style: WaveTextStyles.headline5),
+            _viewModel.settingUiEvent.ui(builder: (context, state) {
+              if (!state.hasData || state.data.isNullOrEmpty) {
+                return const SizedBox(width: double.infinity);
+              }
 
-            if (state.data is DeviceNotConnected) {
-              return CommonGuideButton.onlyWifiGuide(
-                onTap: () => _rootViewModel.navigateToConnectionPage(),
-              );
-            } else if (state.data is DeviceConnected) {
-              return Expanded(child: _buildWebView());
-            }
+              if (state.data is DeviceNotConnected) {
+                return CommonGuideButton.notConnectGuide(
+                  onTap: () => _rootViewModel.navigateToConnectionPage(),
+                );
+              } else if (state.data is DeviceConnected) {
+                return Expanded(child: _buildWebView());
+              }
 
-            return const SizedBox.shrink();
-          }),
-        ],
-      ),
+              return const SizedBox(width: double.infinity);
+            }),
+          ],
+        ),
+      )
     );
   }
 
@@ -190,13 +208,13 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           YaruCheckButton(
-                            title: const Text('Tilt', style: TextStyle(color: Colors.white)),
+                            title: const Text('Tilt : 앞,뒤 기울기', style:  WaveTextStyles.body1Bold),
                             value: state.data!.isTiltAngle,
                             onChanged: (v) {},
                             tristate: true,
                           ),
                           YaruCheckButton(
-                            title: const Text('Roll', style: TextStyle(color: Colors.white)),
+                            title: const Text('Roll : 앞,뒤 기울기', style: WaveTextStyles.body1Bold),
                             value: state.data!.isRollAngle,
                             onChanged: (v) {},
                             tristate: true,
@@ -209,16 +227,7 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
               ),
             ),
           ),
-          StreamBuilder<LoadingState>(
-              stream: _controller.loadingState,
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data == LoadingState.loading) {
-                  return const YaruLinearProgressIndicator(color: YaruColors.blue);
-                } else {
-                  _animationController.forward();
-                  return const SizedBox.shrink();
-                }
-              }),
+
         ],
       );
     }

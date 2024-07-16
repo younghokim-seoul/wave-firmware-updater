@@ -14,7 +14,6 @@ import 'package:wave_desktop_installer/domain/ota_data.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/utils/constant.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
-import 'package:wave_desktop_installer/utils/extension.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:win_ble/win_ble.dart';
 
@@ -23,7 +22,7 @@ class BleRepositoryImp extends BluetoothRepository {
   BleRepositoryImp()
       : _bleScanController = StreamController.broadcast(),
         _gattController = StreamController.broadcast(),
-        _connectionTimeout = const Duration(seconds: 5),
+        _connectionTimeout = const Duration(seconds: 3),
         _deviceMap = {};
 
   final Duration _connectionTimeout;
@@ -64,6 +63,7 @@ class BleRepositoryImp extends BluetoothRepository {
 
     if (connectState.state) {
       await send(WelcomeDataRequest().getRawBytes());
+      await send(VersionDataRequest().getRawBytes());
       _pingSubscription = Stream<int>.periodic(
         _connectionTimeout,
         (_) => _,
@@ -147,7 +147,7 @@ class BleRepositoryImp extends BluetoothRepository {
         .where((ad) => discoveredDevices.indexWhere((element) => element.macAddress == ad.address) == -1)
         .listen((device) {
       Log.d('scanCallback Call => ${device.name} ${device.address} ${device.rssi}');
-      discoveredDevices.add(ScanDevice.toDomain(device.name.replaceAll('\n', ''), device.address, device.rssi));
+      discoveredDevices.add(ScanDevice.toDomain(device.name.replaceAll('\n', ''), device.address, device.rssi ,ConnectionStatus.disconnected));
 
       Log.d(":::discoveredDevices... $discoveredDevices");
     });
@@ -184,19 +184,6 @@ class BleRepositoryImp extends BluetoothRepository {
       });
       _notifySubscription = characteristicValueStream(device.macAddress).listen((datagram) {
         Log.i('>>>>>>>>>>>>>>>>>>>>>[_putDeviceAddress] characteristicValueStreamOf => ${device.macAddress}');
-
-        // final packet = datagram.whereType<int>().toList();
-        // final msgType = packet.sublist(2, 5);
-        // String hex = utf8.decode(packet);
-        // String event = utf8.decode(msgType);
-        //
-        // if(event =="FWD") {
-        //   final response = hex.extractDataFirmwareDownData().split(",");
-        //
-        // }else{
-        //   _onParseData(datagram);
-        // }
-
         _onParseData(datagram);
       });
     }
@@ -306,8 +293,7 @@ class BleRepositoryImp extends BluetoothRepository {
     // Log.d("response: $response");
 
     await Future.doWhile(() async {
-
-      try{
+      try {
         final response = await transferBinaryData();
 
         if (response is FirmwareDownloadingResponse) {
@@ -335,7 +321,7 @@ class BleRepositoryImp extends BluetoothRepository {
           }
         }
         return true;
-      }catch(e){
+      } catch (e) {
         rethrow;
       }
     });
@@ -466,6 +452,12 @@ class BleRepositoryImp extends BluetoothRepository {
     Log.d("send--->>>> ${otaDataRequest.getRawBytes()}");
 
     return await send(otaDataRequest.getRawBytes());
+  }
+
+  @override
+  Future<void> failOTA() async {
+    otaData = OtaData.blank();
+    progress = null;
   }
 }
 

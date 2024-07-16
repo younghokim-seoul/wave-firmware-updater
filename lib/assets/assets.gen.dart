@@ -41,6 +41,14 @@ class $AssetsIconsGen {
   AssetGenImage get closeBtnNormal =>
       const AssetGenImage('assets/icons/Close_Btn_Normal.png');
 
+  /// File path: assets/icons/Close_Btn_Over.png
+  AssetGenImage get closeBtnOver =>
+      const AssetGenImage('assets/icons/Close_Btn_Over.png');
+
+  /// File path: assets/icons/Icon_Alert.png
+  AssetGenImage get iconAlert =>
+      const AssetGenImage('assets/icons/Icon_Alert.png');
+
   /// File path: assets/icons/Icon_Battery.png
   AssetGenImage get iconBattery =>
       const AssetGenImage('assets/icons/Icon_Battery.png');
@@ -89,6 +97,10 @@ class $AssetsIconsGen {
   AssetGenImage get reductionBtnNormal =>
       const AssetGenImage('assets/icons/Reduction_Btn_Normal.png');
 
+  /// File path: assets/icons/Reduction_Btn_Over.png
+  AssetGenImage get reductionBtnOver =>
+      const AssetGenImage('assets/icons/Reduction_Btn_Over.png');
+
   /// File path: assets/icons/icon_wave_tools.png
   AssetGenImage get iconWaveTools =>
       const AssetGenImage('assets/icons/icon_wave_tools.png');
@@ -99,6 +111,8 @@ class $AssetsIconsGen {
         btnFirmwareUpdateDownloading,
         btnFirmwareUpdateStart,
         closeBtnNormal,
+        closeBtnOver,
+        iconAlert,
         iconBattery,
         iconWaveToolsAlert,
         iconWaveToolsRefresh,
@@ -111,6 +125,7 @@ class $AssetsIconsGen {
         iconWifiDisable,
         iconWifiEnable,
         reductionBtnNormal,
+        reductionBtnOver,
         iconWaveTools
       ];
 }
