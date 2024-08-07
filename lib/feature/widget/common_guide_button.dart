@@ -3,15 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/feature/widget/bounce_button.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:yaru/yaru.dart';
+
+
+enum CommonGuideButtonType {
+  notConnectGuide,
+  scanGuide,
+  onlyWifiGuide,
+}
 
 class CommonGuideButton extends ConsumerWidget {
   const CommonGuideButton({
     required this.icon,
     required this.buttonText,
-    required this.guideText,
     required this.onTap,
     super.key,
   });
@@ -20,30 +27,15 @@ class CommonGuideButton extends ConsumerWidget {
     required this.onTap,
     super.key,
   })  : icon = Assets.icons.iconWavetoolsConnection.image(),
-        buttonText = 'Connection Start',
-        guideText = 'WAVE Tools 사용을 위해, WAVE를 연결해주세요.';
-
-  CommonGuideButton.scanGuide({
-    required this.onTap,
-    super.key,
-  })  : icon = Assets.icons.iconWavetoolsConnection.image(),
-        buttonText = 'Connection Start',
-        guideText = 'WAVE Tools 사용을 위해, Launch Monitor를 연결해주세요.';
-
-  CommonGuideButton.onlyWifiGuide({
-    required this.onTap,
-    super.key,
-  })  : icon = Assets.icons.iconWaveToolsWifi01.image(),
-        buttonText = 'Wifi Connection Only',
-        guideText = 'WAVE Tools 사용을 위해, WAVE를 연결해주세요.\nAlignment 설정은 Wi-Fi연결 모드에서 사용할 수 있습니다.';
+        buttonText = 'Connection Start';
 
   final VoidCallback onTap;
-  final String guideText;
   final String buttonText;
   final Image icon;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -52,7 +44,7 @@ class CommonGuideButton extends ConsumerWidget {
           _buildConnectionRequestButton().paddingSymmetric(horizontal: 129),
           const Gap(38),
           Text(
-            guideText,
+            l10n.waveToolsSensorConnectionText02,
             textAlign: TextAlign.center,
             style: WaveTextStyles.commentBold,
           ).marginOnly(bottom: 5),

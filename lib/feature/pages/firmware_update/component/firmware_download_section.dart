@@ -6,6 +6,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_view_model.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:yaru/theme.dart';
@@ -22,6 +23,7 @@ class FirmwareDownloadSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -35,7 +37,7 @@ class FirmwareDownloadSection extends ConsumerWidget {
               repeatForever: true,
               animatedTexts: [
                 ColorizeAnimatedText(
-                  '업데이트 파일을 확인하고 있습니다.',
+                  l10n.waveToolsFirmwareUpdateText10,
                   textStyle: WaveTextStyles.commentHeaderBold,
                   colors: [YaruColors.commentTextLight, Colors.white],
                 ),

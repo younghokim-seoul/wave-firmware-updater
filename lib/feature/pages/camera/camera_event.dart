@@ -3,29 +3,22 @@ import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_error_section.dart';
 import 'package:wave_desktop_installer/feature/pages/setting/setting_state.dart';
 
-sealed class SettingEvent extends Equatable {
-  const SettingEvent();
+sealed class CameraEvent extends Equatable {
+  const CameraEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class CameraLoading extends SettingEvent {
-  const CameraLoading();
+class CameraNotConnected extends CameraEvent {
+  const CameraNotConnected();
 
   @override
   List<Object?> get props => [];
 }
 
-class DeviceNotConnected extends SettingEvent {
-  const DeviceNotConnected();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class DeviceConnected extends SettingEvent {
-  const DeviceConnected();
+class CameraConnected extends CameraEvent {
+  const CameraConnected();
 
   @override
   List<Object?> get props => [];

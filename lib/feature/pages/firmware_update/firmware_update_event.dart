@@ -34,16 +34,16 @@ class FirmwareVersionInfoRequested extends FirmwareUpdateEvent {
 }
 
 class FirmwareVersionInfoReceived extends FirmwareUpdateEvent {
-  final FirmwareVersion data;
+  final String localVersion;
   final String currentVersion;
 
   const FirmwareVersionInfoReceived({
-    required this.data,
+    required this.localVersion,
     required this.currentVersion
   });
 
   @override
-  List<Object?> get props => [data,currentVersion];
+  List<Object?> get props => [localVersion,currentVersion];
 }
 
 class FirmwareDownloadProgress extends FirmwareUpdateEvent {
@@ -65,11 +65,10 @@ class FirmwareDownloadComplete extends FirmwareUpdateEvent {
 }
 
 class FirmwareErrorNotify extends FirmwareUpdateEvent {
-  final FirmwareError error;
   final ErrorCode code;
 
-  const FirmwareErrorNotify({required this.error,required this.code});
+  const FirmwareErrorNotify({required this.code});
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [code];
 }

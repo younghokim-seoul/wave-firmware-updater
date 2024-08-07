@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:file/file.dart';
@@ -6,6 +7,7 @@ import 'package:file/local.dart';
 import 'package:ftp_connect/ftpconnect.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
+import 'package:wave_desktop_installer/data/exception/response_code.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
 import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
@@ -17,24 +19,27 @@ import 'package:wave_desktop_installer/utils/dev_log.dart';
 class FwupdImp extends FwupdService {
   FwupdImp(this._bluetoothRepository)
       : _dio = Dio(),
-        _fs = const LocalFileSystem(),
-        _ftp = FTPConnect(
-          Const.waveIp,
-          port: Const.ftpPort,
-          user: Const.ftpUser,
-          pass: Const.ftpPass,
-          showLog: true,
-        );
+        _fs = const LocalFileSystem();
+
+  // _ftp = FTPConnect(
+  //   Const.waveIp,
+  //   port: Const.ftpPort,
+  //   user: Const.ftpUser,
+  //   pass: Const.ftpPass,
+  //   showLog: true,
+  // );
 
   final Dio _dio;
   final FileSystem _fs;
-  final FTPConnect _ftp;
+  FTPConnect? _ftp;
   final BluetoothRepository _bluetoothRepository;
 
   double? _downloadProgress;
   FwupdStatus _currentState = FwupdStatus.idle;
 
   FirmWareChannelListener? _firmWareChannelListener;
+
+  String get parentPath => p.join(p.dirname(Platform.resolvedExecutable), '..', "BinaryPatch");
 
   Future<File> _downloadRelease(String url) async {
     final path = p.join(_fs.systemTempDirectory.path, p.basename(url));
@@ -66,13 +71,23 @@ class FwupdImp extends FwupdService {
   FwupdStatus get status => _downloadProgress != null ? FwupdStatus.downloading : _currentState;
 
   @override
-  Future<void> wifiInstall(FirmwareVersion release) async {
-    Log.d('::::wifiInstall... $release');
+  Future<void> wifiInstall() async {
+    Log.d('::::wifi Firmware Install...');
     try {
+      if (_currentState == FwupdStatus.downloading) {
+        return;
+      }
+
       _currentState = FwupdStatus.downloading;
-      final patchFile = await _downloadRelease(release.patchDownloadUrl);
+      // final patchFile = await _downloadRelease(release.patchDownloadUrl);
+      final zipPath = p.join(parentPath, 'patch.zip');
+      Log.d("zipPath... $zipPath");
+      final patchFile = _fs.file(zipPath);
+      if (!patchFile.existsSync()) {
+        throw FwupdException('file not exist', ErrorCode.notFoundBinaryFile.code);
+      }
       final fileSize = await patchFile.readAsBytes();
-      Log.d("::::patchFile fileSize... ${fileSize.length}");
+      Log.d('::::patchFile fileSize... ${fileSize.length}');
       await _installBinary(patchFile);
       _currentState = FwupdStatus.complete;
     } on Exception catch (e) {
@@ -109,16 +124,18 @@ class FwupdImp extends FwupdService {
   Future<void> _installBinary(File file) async {
     try {
       Log.i('Connecting to FTP ...');
-      await _ftp.connect();
-      final status = await _ftp.changeDirectory('DigitalBoard');
+
+      _ftp = FTPConnect(Const.waveIp, port: Const.ftpPort, user: Const.ftpUser, pass: Const.ftpPass, showLog: true);
+      await _ftp!.connect();
+      final status = await _ftp!.changeDirectory('GRadar_DLL');
       Log.i('status to FTP ...$status');
       Log.i('Uploading ...');
-      await _ftp.uploadFile(file, onProgress: (progress, total, fileSize) {
+      await _ftp!.uploadFile(file, onProgress: (progress, total, fileSize) {
         print('progress: $progress' + ' total: $total ' + ' filesize: $fileSize ');
         _setDownloadProgress(progress);
       });
       Log.i('file uploaded sucessfully');
-      await _ftp.disconnect();
+      await _ftp!.disconnect();
     } catch (e) {
       Log.i('Error: ${e.toString()}');
       rethrow;
@@ -137,7 +154,7 @@ class FwupdImp extends FwupdService {
 
   @override
   Future<void> reboot() async {
-    if(_currentState == FwupdStatus.complete){
+    if (_currentState == FwupdStatus.complete) {
       _currentState = FwupdStatus.idle;
     }
   }
@@ -145,5 +162,38 @@ class FwupdImp extends FwupdService {
   @override
   void removeFirmWareChannelListener() {
     _firmWareChannelListener = null;
+  }
+
+  @override
+  Future<void> cancelInstall() async {
+    try {
+      await _ftp?.disconnect();
+    } catch (e) {
+      Log.i('Error: ${e.toString()}');
+    } finally {
+      _setDownloadProgress(null);
+      _currentState = FwupdStatus.idle;
+    }
+  }
+
+  @override
+  Future<void> writeConfig(FirmwareVersion version) async {
+    final dir = _fs.file(p.join(parentPath, 'config.txt'));
+
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
+    await dir.writeAsString(version.versionNumber);
+  }
+
+  @override
+  Future<String> readConfig() async {
+    final dir = _fs.file(p.join(parentPath, 'config.txt'));
+
+    Log.d("readConfig... $dir");
+    if (!dir.existsSync()) {
+      return '';
+    }
+    return await dir.readAsString();
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/feature/widget/bounce_button.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 
 class FirmwareAlreadyLatestVersionSection extends ConsumerWidget {
@@ -15,6 +16,7 @@ class FirmwareAlreadyLatestVersionSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -30,8 +32,8 @@ class FirmwareAlreadyLatestVersionSection extends ConsumerWidget {
           Container(
             height: 100,
             alignment: Alignment.bottomCenter,
-            child: const Text(
-              '펌웨어 버전이 최신 입니다.',
+            child: Text(
+              l10n.waveToolsFirmwareUpdateText12,
               style: WaveTextStyles.commentHeaderBold,
             ),
           ),

@@ -40,9 +40,10 @@ class AlignmentView extends CustomPainter {
 
     const heelX = 0; // 상대적 위치 (20% of screen width)
     final heelY = teeLineY;
-    _drawText(canvas, targetLineX, targetLineY, "Target line");
-    _drawText(canvas, teeLineX, teeLineY, "Tee line");
-    _drawText(canvas, heelX, heelY, "Heel");
+    _drawText(canvas, targetLineX, targetLineY, 'Target line');
+    _drawText(canvas, teeLineX, teeLineY, 'Tee line');
+    _drawText(canvas, heelX, heelY, 'Heel');
+    _drawText(canvas, targetLineX, size.height * 0.80, 'Ball');
 
     final testPaint = Paint()
       ..color = Colors.red

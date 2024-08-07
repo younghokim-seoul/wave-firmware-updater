@@ -5,20 +5,19 @@ import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/data/connection_status.dart';
 import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
-import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_event.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_state.dart';
-import 'package:wave_desktop_installer/utils/dev_log.dart';
+import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
 
 @lazySingleton
 class ConnectionViewModel with IsolateHelperMixin {
-  ConnectionViewModel(this._wifiRepository, this._bluetoothRepository);
+  ConnectionViewModel(this._wifiRepository);
 
   final WifiRepository _wifiRepository;
-  final BluetoothRepository _bluetoothRepository;
+
 
   final connectionUiState = ArcSubject<ConnectionEvent>();
 
@@ -49,18 +48,18 @@ class ConnectionViewModel with IsolateHelperMixin {
   Future<void> disposeConnection() async {
     await _connectionSubscription?.cancel();
     _connectionSubscription = null;
-    Log.d(":::커넥션 스트림 제거");
   }
 
   Future<void> startScan() async {
-    Log.i('Start Scan');
+    realLog.info('Start Scan');
     connectionUiState.val = const NearByDevicesRequested();
     await _resetAndSubscribeToScan();
     try {
       await subscribeToMessages();
       await _wifiRepository.startScan();
     } catch (e, t) {
-      Log.e('[startScan Error] $e');
+      realLog.error('[startScan Error] $e');
+      connectionUiState.val = const NearByDeviceNotFound();
     }
   }
 
@@ -70,6 +69,7 @@ class ConnectionViewModel with IsolateHelperMixin {
   }
 
   Future<void> stopScan() async {
+    realLog.info('StopScan');
     await _wifiRepository.stopScan();
   }
 
@@ -79,9 +79,9 @@ class ConnectionViewModel with IsolateHelperMixin {
         subscribeToConnection();
 
         String ssid = item.model.macAddress;
-        Log.d('Connecting to $ssid ' + status.toString());
+        realLog.info('Connecting to $ssid $status');
         if (status == ConnectionStatus.connecting) {
-          Log.d('Connecting to $ssid return');
+          realLog.info('Already Status Connecting to $ssid return');
           return;
         }
 
@@ -91,7 +91,7 @@ class ConnectionViewModel with IsolateHelperMixin {
           await _wifiRepository.disconnect();
         }
       } catch (e, t) {
-        Log.e('Device connection failed $e');
+        realLog.error('Device connection failed $e');
         await _wifiRepository.disconnect();
       }
     }
@@ -122,6 +122,7 @@ class ConnectionViewModel with IsolateHelperMixin {
   }
 
   void _subscribeToWifiConnectionStatus() {
+    _wifiRepository.setRetryConnectMode(true);
     _connectionSubscription ??= _wifiRepository.statuses.listen((response) {
       _handleConnectionResponse(response.item1, response.item2);
     });
@@ -132,7 +133,7 @@ class ConnectionViewModel with IsolateHelperMixin {
   }
 
   void _handleConnectionResponse(String macAddress, ConnectionStatus state) {
-    Log.d('[_handleConnectionResponse] Connection State: [ $macAddress ] $state ');
+    realLog.info('[_handleConnectionResponse] Connection State: [ $macAddress ] $state ');
 
     if (connectionUiState.val is NearByDevicesUpdate) {
       NearByDevicesUpdate model = connectionUiState.val;
@@ -151,7 +152,7 @@ class ConnectionViewModel with IsolateHelperMixin {
 
   bool _isExpanded({required ScanDevice origin, required String? cacheSSID}) {
     if (origin.macAddress == cacheSSID) {
-      return origin.status == ConnectionStatus.connected ? true : false;
+      return origin.status == ConnectionStatus.connected || origin.status == ConnectionStatus.connecting ? true : false;
     }
     return false;
   }
@@ -167,9 +168,8 @@ class ConnectionViewModel with IsolateHelperMixin {
 
     final connectDevice = _wifiRepository.getAddressFromDevice;
 
-    Log.d("현재 연결된 장치?? $connectDevice");
-
     if (response.isNullOrEmpty) {
+      realLog.error("scan empty!!!");
       connectionUiState.val = const NearByDeviceNotFound();
       return;
     }

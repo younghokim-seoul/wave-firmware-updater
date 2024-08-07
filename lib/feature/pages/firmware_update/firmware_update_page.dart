@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -12,6 +14,7 @@ import 'package:wave_desktop_installer/feature/pages/firmware_update/component/f
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_event.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/main_view_model.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
@@ -31,9 +34,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
   @override
   void initState() {
-    Log.d("화면 진입한데이!!!!!!!!!!!!!!!!!!!!!!");
     super.initState();
-    _viewModel.setConnectionMode(ref.read(connectionModeProvider));
     _viewModel.subscribeToStatuses();
     _viewModel.checkFirmwareVersion();
   }
@@ -46,6 +47,8 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       body: SizedBox(
         width: getScreenWidth(context),
@@ -65,10 +68,10 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                 }
 
                 if (state.data is FirmwareVersionInfoRequested) {
-                  return const Expanded(
+                  return Expanded(
                       child: Center(
                           child: SpinKitFadingCircle.large(
-                    label: '업데이트 확인 중...',
+                    label: l10n.waveToolsFirmwareUpdateText02,
                   )));
                 }
 
@@ -92,7 +95,6 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                   final data = (state.data as FirmwareErrorNotify);
                   return Flexible(
                     child: FirmwareErrorSection(
-                      errorType: data.error,
                       errorCode: data.code,
                       onRetryCallback: () {
                         _viewModel.checkFirmwareVersion();
@@ -102,7 +104,9 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
                 }
 
                 if (state.data is FirmwareDownloadComplete) {
-                  return FirmwareCompleteSection(onTap: () => _viewModel.checkFirmwareVersion());
+                  return FirmwareCompleteSection(onTap: () {
+                    _viewModel.checkFirmwareVersion();
+                  });
                 }
 
                 return Container();

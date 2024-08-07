@@ -7,6 +7,7 @@ import 'package:wave_desktop_installer/di/configurations.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/component/device_scan_view.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/commom_button.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
@@ -40,6 +41,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 100),
@@ -61,8 +63,8 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
             const Gap(12),
             CommonButton(
               icon: Assets.icons.iconWaveToolsScan.image(),
-              title: const Text(
-                'Rescan Nearby Devices',
+              title: Text(
+                l10n.waveToolsBtnConnectionText04,
                 style: WaveTextStyles.buttonLarge,
               ),
               onTap: () => _viewModel.startScan(),

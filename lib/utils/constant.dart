@@ -20,4 +20,10 @@ class Const {
   static const int ftpPort = 3999;
   static const String ftpUser = 'upgrade';
   static const String ftpPass = 'gradar';
+
+  static String hostname = '127.0.0.1';
+  static int port = 5999;
 }
+
+
+

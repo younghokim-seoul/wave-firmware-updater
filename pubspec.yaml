@@ -24,6 +24,7 @@ dependencies:
     path: packages/ftp_connect
 
 
+
   injectable: ^2.3.2
   get_it: ^7.6.6
   rxdart: ^0.27.7
@@ -39,6 +40,8 @@ dependencies:
   file: ^7.0.0
   path: ^1.9.0
   tuple: ^2.0.2
+  logging: ^1.2.0
+  logging_appenders: ^1.3.1
 
 
   cupertino_icons: ^1.0.6
@@ -54,7 +57,7 @@ dependencies:
   ffi: ^2.1.2
   expandable: ^5.0.1
   equatable: ^2.0.5
-  collection: ^1.15.0
+  collection: ^1.18.0
 
   flutter_localizations:  # 다국어 패키지
     sdk: flutter
@@ -74,6 +77,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/icons/
     - assets/fonts/

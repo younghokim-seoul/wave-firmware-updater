@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:control_protocol/control_protocol.dart';
+import 'package:ftp_connect/ftpconnect.dart';
 import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/data/exception/response_code.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
@@ -13,6 +14,7 @@ import 'package:wave_desktop_installer/domain/repository/patch_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_error_section.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_event.dart';
+import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
@@ -33,31 +35,29 @@ class FirmwareUpdateViewModel {
   final PatchRepository _patchRepository;
   final FwupdService _fwupdService;
 
-  ConnectionMode connectionMode = ConnectionMode.wifi;
 
-  bool get isClosed => connectionMode == ConnectionMode.wifi ? _wifiRepository.isClosed : _bleRepository.isClosed;
+
+  bool get isClosed => _wifiRepository.isClosed;
 
   final firmwareUiEvent = ArcSubject<FirmwareUpdateEvent>();
   final percentage = ArcSubject<double>(seed: 0.0);
   StreamSubscription? _statusesSubscription;
 
+  // FirmwareVersion? _firmwareVersion;
 
-  FirmwareVersion? _firmwareVersion;
-
-  void setConnectionMode(ConnectionMode mode) {
-    connectionMode = mode;
-  }
 
   Future<void> subscribeToStatuses() async {
+    _wifiRepository.setRetryConnectMode(false);
     _statusesSubscription ??= _wifiRepository.statuses.listen(
-      (state) {
-        Log.i('::::: wifi 연결상태 콜백 $state ${_fwupdService.status}');
+      (state) async {
+        realLog.info('[FirmwareUpdateViewModel] Connection Callback $state | ${_fwupdService.status}');
         if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.complete) {
           loadState(const FirmwareDownloadComplete());
         }
 
         if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.downloading) {
-          loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail,code: ErrorCode.uploadFail));
+          await _fwupdService.cancelInstall();
+          loadState(const FirmwareErrorNotify(code: ErrorCode.deviceTimeout));
         }
         if (state.item2 == ConnectionStatus.disconnected && _fwupdService.status == FwupdStatus.idle) {
           loadState(const DeviceNotConnected());
@@ -73,7 +73,7 @@ class FirmwareUpdateViewModel {
 
   _changeLatestStatus() {
     if (isClosed) {
-      Log.i("not connected Device");
+      realLog.info('Wave Not Connect');
       loadState(const DeviceNotConnected());
       return;
     }
@@ -87,7 +87,7 @@ class FirmwareUpdateViewModel {
     _fwupdService.addFirmWareChannelListener(
       FirmWareChannelListener(
         onPercentageChanged: (progress) {
-          Log.d('[ViewModel Receive] onPercentageChanged $progress');
+          realLog.info('[ViewModel Receive] onPercentageChanged $progress');
           if (percentage.subject.isClosed) return;
           percentage.val = progress;
         },
@@ -95,55 +95,72 @@ class FirmwareUpdateViewModel {
     );
   }
 
-  void checkFirmwareVersion() async {
-    Log.i('[checkFirmwareVersion] ${_fwupdService.status} | isCloned $isClosed | connectionMode $connectionMode');
+  void checkFirmwareVersion({bool isForced = false}) async {
+    realLog.info('[checkFirmwareVersion] ${_fwupdService.status} | isCloned $isClosed');
 
     _changeLatestStatus();
     registerPercentageCallback();
 
     if (_fwupdService.status != FwupdStatus.idle || isClosed) {
-      Log.i('checkFirmwareVersion status is not idle or not connected Device');
+      realLog.info('checkFirmwareVersion status is not idle or not connected Device');
       return;
     }
 
     try {
       loadState(const FirmwareVersionInfoRequested());
-      _firmwareVersion = await _patchRepository.fetchPatchDetails();
+      // _firmwareVersion = await _patchRepository.fetchPatchDetails();
 
+      final versionConfig = await _fwupdService.readConfig();
+
+      realLog.info('current versionConfig $versionConfig');
+
+      if (versionConfig.isNullOrEmpty) {
+        realLog.error('version config empty');
+        loadState(const FirmwareErrorNotify(code: ErrorCode.notFoundBinaryFile));
+        return;
+      }
+
+      realLog.info('GET SW VER Request...........');
       final response = await _wifiRepository.send(VersionDataRequest().rawBytes, timeout: const Duration(seconds: 5));
-
-      if(response is FirmwareVersionResponse){
-        final serverVersion = int.parse(_firmwareVersion!.versionNumber.replaceAll('.', ''));
+      realLog.info('GET SW VER Response..$response');
+      if (response is FirmwareVersionResponse) {
+        final serverVersion = int.parse(versionConfig.replaceAll('.', ''));
         final deviceVersion = int.parse(response.verCode);
 
-        Log.d('serverVersion: $serverVersion, deviceVersion: $deviceVersion');
+        realLog.info('serverVersion: $serverVersion, deviceVersion: $deviceVersion');
 
         if (serverVersion > deviceVersion) {
-          loadState(FirmwareVersionInfoReceived(data: _firmwareVersion!, currentVersion: response.verCode));
+          loadState(FirmwareVersionInfoReceived(localVersion: versionConfig, currentVersion: response.verCode));
         } else {
           loadState(FirmwareAlreadyLatestVersion(currentVersion: response.verCode));
         }
+      } else {
+        loadState(const FirmwareErrorNotify(code: ErrorCode.deviceTimeout));
       }
     } catch (e) {
-      Log.e('[checkFirmwareUpdate] error: $e');
-      loadState(const FirmwareErrorNotify(error: FirmwareError.serverDownloadFail,code: ErrorCode.deviceTimeout));
+      realLog.error('[checkFirmwareUpdate] error: $e');
+      loadState(const FirmwareErrorNotify(code: ErrorCode.deviceTimeout));
     }
   }
 
   void installFirmware() async {
     if (firmwareUiEvent.val is FirmwareVersionInfoReceived) {
       try {
-        final firmwareVersion = (firmwareUiEvent.val as FirmwareVersionInfoReceived).data;
 
-        if (!firmwareVersion.isNullOrEmpty) {
-          loadState(const FirmwareDownloadProgress(downloadProgress: null));
-          await _fwupdService.wifiInstall(firmwareVersion!);
-          await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
-          loadState(const FirmwareDownloadComplete());
-        }
+        loadState(const FirmwareDownloadProgress(downloadProgress: null));
+        await _fwupdService.wifiInstall();
+        await _wifiRepository.cancelPing();
+        await _wifiRepository.send(RebootDataRequest().getRawBytes(), isAutoConnect: true);
+        loadState(const FirmwareDownloadComplete());
       } catch (e) {
         Log.e('[installFirmware] error... $e');
-        loadState(const FirmwareErrorNotify(error: FirmwareError.firmwareDownloadFail,code: ErrorCode.uploadFail));
+        ErrorCode errorCode = ErrorCode.undefinedErrorCode;
+        if (e is FTPConnectException) {
+          errorCode = ErrorCode.serverConnectFail;
+        } else if (e is FwupdException) {
+          errorCode = ErrorCode.fromCode(e.code);
+        }
+        loadState(FirmwareErrorNotify(code: errorCode));
       }
     }
   }
@@ -156,7 +173,7 @@ class FirmwareUpdateViewModel {
   }
 
   void dispose() {
-    CancelTokenManager.cancelAll();
+    // CancelTokenManager.cancelAll();
     firmwareUiEvent.close();
     percentage.close();
     _fwupdService.reboot();

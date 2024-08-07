@@ -31,48 +31,48 @@ dev_dependencies:
   test: ^1.21.4
   yaru_window_platform_interface: ^0.1.0
 
-flutter:
-  fonts:
-    - family: Ubuntu
-      fonts:
-        - asset: assets/fonts/Ubuntu-L.ttf
-          weight: 300
-        - asset: assets/fonts/Ubuntu-LI.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/Ubuntu-R.ttf
-          weight: 400
-        - asset: assets/fonts/Ubuntu-RI.ttf
-          weight: 400
-          style: italic
-        - asset: assets/fonts/Ubuntu-M.ttf
-          weight: 500
-        - asset: assets/fonts/Ubuntu-MI.ttf
-          weight: 500
-          style: italic
-        - asset: assets/fonts/Ubuntu-B.ttf
-          weight: 700
-        - asset: assets/fonts/Ubuntu-BI.ttf
-          weight: 700
-          style: italic
-    - family: YaruIcons
-      fonts:
-        - asset: assets/yaru_icons.otf
+#flutter:
+#  fonts:
+#    - family: Ubuntu
+#      fonts:
+#        - asset: assets/fonts/Ubuntu-L.ttf
+#          weight: 300
+#        - asset: assets/fonts/Ubuntu-LI.ttf
+#          weight: 300
+#          style: italic
+#        - asset: assets/fonts/Ubuntu-R.ttf
+#          weight: 400
+#        - asset: assets/fonts/Ubuntu-RI.ttf
+#          weight: 400
+#          style: italic
+#        - asset: assets/fonts/Ubuntu-M.ttf
+#          weight: 500
+#        - asset: assets/fonts/Ubuntu-MI.ttf
+#          weight: 500
+#          style: italic
+#        - asset: assets/fonts/Ubuntu-B.ttf
+#          weight: 700
+#        - asset: assets/fonts/Ubuntu-BI.ttf
+#          weight: 700
+#          style: italic
+#    - family: YaruIcons
+#      fonts:
+#        - asset: assets/yaru_icons.otf
 
-icon_font:
-  input_svg_dir: "assets/icons/"
-  output_font_file: "assets/yaru_icons.otf"
-
-  output_class_file: "lib/src/yaru_icons.dart"
-  symlink_map_file: "assets/symlinks.json"
-  class_name: "YaruIcons"
-  package: yaru
-  format: false
-  naming_strategy: "snake"
-
-  font_name: "YaruIcons"
-  normalize: false
-  ignore_shapes: false
-
-  recursive: true
-  verbose: true
+#icon_font:
+#  input_svg_dir: "assets/icons/"
+#  output_font_file: "assets/yaru_icons.otf"
+#
+#  output_class_file: "lib/src/yaru_icons.dart"
+#  symlink_map_file: "assets/symlinks.json"
+#  class_name: "YaruIcons"
+#  package: yaru
+#  format: false
+#  naming_strategy: "snake"
+#
+#  font_name: "YaruIcons"
+#  normalize: false
+#  ignore_shapes: false
+#
+#  recursive: true
+#  verbose: true

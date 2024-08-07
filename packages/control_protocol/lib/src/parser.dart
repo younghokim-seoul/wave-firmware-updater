@@ -17,7 +17,6 @@ WaveSensorResponse parseResponse(String data) {
 
       if (content.startsWith(heartBeatPrefix)) {
         final heartBeatInfo = values[0].split(',');
-
         return WaveSensorHeartBeatResponse(
           timeStamp: heartBeatInfo[0],
           batteryStatus: heartBeatInfo[1],
@@ -34,7 +33,6 @@ WaveSensorResponse parseResponse(String data) {
 
       if (content.startsWith(swVer)) {
         final verCode = values.first.replaceAll('.', '');
-        print(":::::verCode... " + verCode);
         return FirmwareVersionResponse(verCode: verCode);
       }
 

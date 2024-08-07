@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wave_desktop_installer/feature/pages/camera/camera_page.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_page.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_page.dart';
 import 'package:wave_desktop_installer/feature/pages/setting/setting_page.dart';
@@ -23,7 +24,7 @@ class PageItem {
   final Widget Function(BuildContext context, bool selected) iconBuilder;
 }
 
-final routes = [
+final launcherRoutes = [
   PageItem(
     title: 'Sensor Connection',
     iconBuilder: (context, selected) => const Icon(YaruIcons.network_cellular_no_route),
@@ -36,7 +37,15 @@ final routes = [
   ),
   PageItem(
     title: 'Alignment Setting',
-    iconBuilder: (context, selected) => Icon(Icons.settings),
+    iconBuilder: (context, selected) => const Icon(Icons.settings),
     pageBuilder: (context) => const SettingPage(),
+  ),
+];
+
+final clientRoutes = [
+  PageItem(
+    title: 'Alignment Setting',
+    iconBuilder: (context, selected) => const Icon(Icons.settings),
+    pageBuilder: (context) => const CameraPage(),
   ),
 ];

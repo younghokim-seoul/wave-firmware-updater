@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:wave_desktop_installer/data/connection_status.dart';
 import 'package:wave_desktop_installer/domain/model/scan_device.dart';
+import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 import 'package:win32/win32.dart';
 
@@ -54,7 +55,7 @@ class SystemWifiUtils {
         return false;
       }
     } else {
-      Log.d("::프로파일이 존재하므로 기존 프로파일 활용.");
+      realLog.info('::Already Wifi Profile Exist');
       if (await isDesiredSsidConnected(ssid) == true) {
         return true;
       }
@@ -167,8 +168,6 @@ class SystemWifiUtils {
 
     final availableNetworkList = ppAvailableNetworkList.value.ref;
     final numberOfItems = availableNetworkList.dwNumberOfItems;
-
-    Log.d(':::Wifi available Size ::: $numberOfItems');
 
     for (int i = 0; i < numberOfItems; i++) {
       // 가변 길이 배열 접근

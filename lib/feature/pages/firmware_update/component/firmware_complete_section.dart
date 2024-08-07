@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/assets/assets.gen.dart';
 import 'package:wave_desktop_installer/feature/widget/commom_button.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
 
 class FirmwareCompleteSection extends ConsumerWidget {
@@ -15,6 +16,7 @@ class FirmwareCompleteSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -22,14 +24,15 @@ class FirmwareCompleteSection extends ConsumerWidget {
         children: [
           SizedBox(width: 480, height: 262, child: Assets.icons.btnFirmwareUpdateComplete.image()),
           const Gap(38),
-          const Text(
-            '업데이트가 완료되어 WAVE(R1)를 재시작 합니다.',
+          Text(
+            l10n.waveToolsFirmwareUpdateText11,
             style: WaveTextStyles.commentHeaderBold,
+            textAlign: TextAlign.center,
           ),
           const Gap(44),
           CommonButton(
-            title: const Text(
-              '확인',
+            title: Text(
+              l10n.waveConfirm,
               style: WaveTextStyles.buttonLarge,
             ),
             onTap: () => onTap.call(),

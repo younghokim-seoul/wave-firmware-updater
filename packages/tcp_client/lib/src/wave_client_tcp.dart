@@ -104,9 +104,9 @@ class TcpClientRepository extends ModbusClient {
         print("::::onDone.. ");
         disconnect();
         socketNotifier!.notifyClose(Close('Connection closed', 1));
-      }, cancelOnError: false);
+      }, cancelOnError: true);
     } catch (ex) {
-      print("Connection to $serverAddress:$serverPort");
+      print("[error] Connection to $serverAddress:$serverPort");
       _socket = null;
       return false;
     }

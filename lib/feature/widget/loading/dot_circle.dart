@@ -3,6 +3,7 @@ import 'dart:math' as math show sin, pi;
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
+import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 
 enum SpinKitFadingCircleType { small, large }
 
@@ -117,10 +118,7 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
     return widget.type == SpinKitFadingCircleType.large
         ? Column(children: [
             const Gap(58),
-            Text(
-              widget.label ?? '',
-              style: WaveTextStyles.buttonLargeBold,
-            ),
+            if (!widget.label.isNullOrEmpty) Text(widget.label ?? '', style: WaveTextStyles.buttonLargeBold),
           ])
         : const SizedBox.shrink();
   }

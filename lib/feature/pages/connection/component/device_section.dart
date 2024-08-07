@@ -8,6 +8,7 @@ import 'package:wave_desktop_installer/di/app_provider.dart';
 import 'package:wave_desktop_installer/feature/pages/connection/connection_state.dart';
 import 'package:wave_desktop_installer/feature/widget/bounce_button.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/utils/extension/margin_extension.dart';
 import 'package:yaru/yaru.dart';
 
@@ -67,6 +68,7 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return ExpandableNotifier(
       controller: _controller,
       child: ScrollOnExpand(
@@ -96,7 +98,29 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
                 ]),
               ),
               collapsed: const SizedBox.shrink(),
-              expanded: _getConnectionControlButton,
+              expanded: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: YaruColors.kubuntuBlue,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    BounceGray(
+                      child: Container(
+                        width: 160,
+                        decoration: const BoxDecoration(color: YaruColors.selectBarHighlightColor),
+                        child: Text(
+                          getStatus(widget.item.status,l10n) ?? '',
+                          style: WaveTextStyles.body1,
+                          textAlign: TextAlign.center,
+                        ).paddingSymmetric(vertical: 8),
+                      ),
+                      onTap: () => widget.onConnectionRequest.call(widget.item, widget.item.status),
+                    )
+                  ],
+                ).paddingSymmetric(vertical: 10, horizontal: 12),
+              ),
             ),
           ],
         ),
@@ -150,29 +174,15 @@ class _DeviceSectionState extends ConsumerState<DeviceSection> {
     }
   }
 
-  Widget get _getConnectionControlButton {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: YaruColors.kubuntuBlue,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          BounceGray(
-            child: Container(
-              width: 160,
-              decoration: const BoxDecoration(color: YaruColors.selectBarHighlightColor),
-              child: Text(
-                statusTitles[widget.item.status] ?? '',
-                style: WaveTextStyles.body1,
-                textAlign: TextAlign.center,
-              ).paddingSymmetric(vertical: 8),
-            ),
-            onTap: () => widget.onConnectionRequest.call(widget.item, widget.item.status),
-          )
-        ],
-      ).paddingSymmetric(vertical: 10, horizontal: 12),
-    );
+  String getStatus(ConnectionStatus status,AppLocalizations l10n) {
+    switch (status) {
+      case ConnectionStatus.connected:
+        return l10n.waveToolsBtnConnectionText03;
+      case ConnectionStatus.connecting:
+        return l10n.waveToolsBtnConnectionText02;
+      case ConnectionStatus.disconnected:
+        return l10n.waveToolsBtnConnectionText01;
+    }
+
   }
 }

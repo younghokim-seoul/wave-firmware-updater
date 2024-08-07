@@ -1,14 +1,10 @@
 
 extension ExtractStringExtension on String {
   String extractDataBootloaderData() {
-
-
-    print(this);
     int startIndex = indexOf(',') + 1;
     int endIndex = indexOf('%');
 
     if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) {
-      print("substring(startIndex, endIndex) "  + substring(startIndex, endIndex));
       return substring(startIndex, endIndex);
     } else {
       return '';

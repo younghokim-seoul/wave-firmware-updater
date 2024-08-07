@@ -42,13 +42,12 @@ class DeviceScanView extends ConsumerWidget {
           );
         } else if (event is NearByDevicesRequested) {
           return const SpinKitFadingCircle.large(
-            label: '기기리스트를 불러오는 중 입니다.',
+            label: '',
           );
         } else {
           return const Center(
             child: FirmwareErrorSection(
-              errorType: FirmwareError.notFoundDevice,
-              errorCode: ErrorCode.undefinedErrorCode,
+              errorCode: ErrorCode.notFoundNearDevice,
             ),
           );
         }

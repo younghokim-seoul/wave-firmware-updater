@@ -7,6 +7,7 @@ import 'package:tuple/tuple.dart';
 import 'package:wave_desktop_installer/data/connection_status.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/patch_repository.dart';
+import 'package:wave_desktop_installer/domain/repository/socket_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
 import 'package:wave_desktop_installer/main_state.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
@@ -14,11 +15,11 @@ import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
 
 @lazySingleton
 class MainViewModel {
-  MainViewModel(this._wifiRepository, this._bluetoothRepository, this._patchRepository);
+  MainViewModel(this._wifiRepository, this._patchRepository);
 
   final WifiRepository _wifiRepository;
-  final BluetoothRepository _bluetoothRepository;
   final PatchRepository _patchRepository;
+
 
   StreamSubscription<WaveSensorResponse>? _subscription;
 
@@ -26,15 +27,16 @@ class MainViewModel {
   final mainUiState = ArcSubject<MainUiState>(seed: MainUiState.initial());
   final versionState = ArcSubject<Tuple3<int, int, bool>>(seed: const Tuple3(-1, -1, false));
 
+
   Future<void> subscribeToMessages() async {
     _subscription ??= _wifiRepository.responseMessage.listen((response) async {
+
       if (response is WaveSensorHeartBeatResponse) {
         MainUiState state = mainUiState.val;
         mainUiState.val = state.copyWith(batteryLevel: response.batteryStatus);
       }
 
       if (response is FirmwareVersionResponse) {
-        Log.d("Firmware Vsersion from Device......$response");
         try {
           final remote = await _patchRepository.fetchPatchDetails();
 
@@ -57,7 +59,7 @@ class MainViewModel {
     });
   }
 
-  void dispose() {
+  void dispose() async {
     mainUiState.close();
     navigateUiEvent.close();
     _subscription?.cancel();

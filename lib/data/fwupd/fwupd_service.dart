@@ -17,8 +17,11 @@ abstract class FwupdService {
   FwupdStatus get status;
   double get percentage;
 
-  Future<void> wifiInstall(FirmwareVersion release);
+  Future<void> wifiInstall();
   Future<void> bluetoothInstall(FirmwareVersion release);
+  Future<void> cancelInstall();
+  Future<void> writeConfig(FirmwareVersion version);
+  Future<String> readConfig();
   Future<void> reboot();
 
   void addFirmWareChannelListener(FirmWareChannelListener listener);

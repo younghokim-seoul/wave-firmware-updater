@@ -1,0 +1,28 @@
+{
+  "@@locale": "ko",
+  "commonWavePopupFirmwareUpdateErrorText02" : "WAVE 센서 재연결 후  다시 시도 하거나,\n공지사항을 확인해주세요.",
+  "waveToolsBtnConnectionText01": "연결",
+  "waveToolsBtnConnectionText02": "연결 중...",
+  "waveToolsBtnConnectionText03": "연결 끊기",
+  "waveToolsBtnConnectionText04": "주변 기기 재검색",
+  "waveToolsSensorConnectionText02": "WAVE Tools 사용을 위해, WAVE를 연결해주세요.",
+  "waveToolsSensorConnectionText03": "연결 가능한 기기가 없습니다.",
+  "waveToolsSensorConnectionText04": "WAVE 센서의 전원 및 연결 장치를 확인해주세요.",
+  "waveToolsFirmwareUpdateText02": "버전 확인 중…",
+  "waveToolsFirmwareUpdateText03": "서버와 연결할 수 없습니다.",
+  "waveToolsFirmwareUpdateText04": "WAVE 센서의 연결 상태를 확인해주세요.\n연결 상태가 정상일 시, 고객 센터로 문의 바랍니다.",
+  "waveToolsFirmwareUpdateText06": "확인 재시도",
+  "waveToolsFirmwareUpdateText07": "최신 버전으로 펌웨어 업데이트를 진행하세요.",
+  "waveToolsFirmwareUpdateText08": "업데이트 시작 전에 확인해 주세요.",
+  "waveToolsFirmwareUpdateText09": "1. VISION WAVE 클라이언트를 종료 한 후에 진행해 주세요.\n2. WAVA 배터리 잔량이 30% 이상인지 확인해 주세요.",
+  "waveToolsFirmwareUpdateText10": "펌웨어 업데이트를 진행하고 있습니다…",
+  "waveToolsFirmwareUpdateText11": "업데이트가 완료되어 WAVE를 재시작 합니다.",
+  "waveToolsFirmwareUpdateText12": "펌웨어 버전이 최신 입니다.",
+  "waveToolsFirmwareUpdateText13": "업데이트를 정상 진행하지 못했습니다.",
+  "waveToolsCommonTextError": "에러 코드",
+  "waveToolsCommonErrorFwverCheckText01": "펌웨어 버전을 확인하지 못했습니다.",
+  "waveToolsCommonErrorFwverCheckText02": "버전 확인을 재시도 해주세요.",
+  "waveToolsAlignmentSettingText02": "아래의 기준선의 골프공 위치에 맞춰 wave radar의 위치를 조정하세요.",
+
+  "waveConfirm" : "확인"
+}
