@@ -303,7 +303,7 @@ abstract class YaruTogglableState<S extends YaruTogglable> extends State<S>
       ..focused = focused
       ..active = active
       ..checked = widget.checked
-      ..oldChecked = oldChecked
+      ..oldChecked = true
       ..position = position
       ..sizePosition = sizePosition
       ..indicatorPosition = indicatorPosition

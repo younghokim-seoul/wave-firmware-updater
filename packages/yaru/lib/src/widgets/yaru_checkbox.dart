@@ -191,6 +191,8 @@ class _YaruCheckboxState extends YaruTogglableState<YaruCheckbox> {
     final painter = _YaruCheckboxPainter();
     fillPainterDefaults(painter);
 
+
+
     const unselectedState = <WidgetState>{};
     const selectedState = {WidgetState.selected};
     const disabledState = {WidgetState.disabled};
@@ -326,21 +328,21 @@ class _YaruCheckboxPainter extends YaruTogglablePainter {
     final mid = Offset(size.width * 0.4091, size.height * 0.6818);
     final end = Offset(size.width * 0.8128, size.height * 0.2781);
 
-    // if (t < 0.5) {
-    //   final strokeT = t * 2.0;
-    //   final drawMid = Offset.lerp(start, mid, strokeT)!;
-    //
-    //   path.moveTo(start.dx, start.dy);
-    //   path.lineTo(drawMid.dx, drawMid.dy);
-    //   path.lineTo(start.dx, start.dy);
-    // } else {
-    //   final strokeT = (t - 0.5) * 2.0;
-    //   final drawEnd = Offset.lerp(mid, end, strokeT)!;
-    //
-    //   path.moveTo(start.dx, start.dy);
-    //   path.lineTo(mid.dx, mid.dy);
-    //   path.lineTo(drawEnd.dx, drawEnd.dy);
-    // }
+    if (t < 0.5) {
+      final strokeT = t * 2.0;
+      final drawMid = Offset.lerp(start, mid, strokeT)!;
+
+      path.moveTo(start.dx, start.dy);
+      path.lineTo(drawMid.dx, drawMid.dy);
+      path.lineTo(start.dx, start.dy);
+    } else {
+      final strokeT = (t - 0.5) * 2.0;
+      final drawEnd = Offset.lerp(mid, end, strokeT)!;
+
+      path.moveTo(start.dx, start.dy);
+      path.lineTo(mid.dx, mid.dy);
+      path.lineTo(drawEnd.dx, drawEnd.dy);
+    }
 
     const strokeT = (1.0 - 0.5) * 2.0;
     final drawEnd = Offset.lerp(mid, end, strokeT)!;

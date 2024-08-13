@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:file/local.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this line
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +42,7 @@ void main(List<String> executableArguments) async {
   await configureDependencies();
   await setupRealLogger();
   await settingWindow();
-  realLog.info('executableArguments.. $executableArguments');
+  setupGlobalErrorHandler();
   runApp(
     ProviderScope(
       child: StoreApp(
@@ -48,6 +50,13 @@ void main(List<String> executableArguments) async {
       ),
     ),
   );
+}
+
+setupGlobalErrorHandler() {
+  PlatformDispatcher.instance.onError = (error, stack) {
+    realLog.error('outside flutter error handle: $error', error, stack);
+    return true;
+  };
 }
 
 Future<void> setupRealLogger() async {
@@ -137,7 +146,7 @@ class _StoreAppState extends ConsumerState<StoreApp> {
   }
 
   void _initRoutes() {
-    if(!widget.executableArguments.isNullOrEmpty) {
+    if (!widget.executableArguments.isNullOrEmpty) {
       switch (widget.executableArguments[0]) {
         case 'launcher':
           _launchMode = LaunchMode.launcher;
@@ -152,8 +161,8 @@ class _StoreAppState extends ConsumerState<StoreApp> {
   }
 
   void _initLanguage() {
-    if(!widget.executableArguments.isNullOrEmpty) {
-      if(widget.executableArguments.length > 1){
+    if (!widget.executableArguments.isNullOrEmpty) {
+      if (widget.executableArguments.length > 1) {
         final language = widget.executableArguments[1];
         switch (language) {
           case 'ko':
@@ -167,10 +176,8 @@ class _StoreAppState extends ConsumerState<StoreApp> {
             break;
         }
       }
-
     }
   }
-
 
   @override
   dispose() {

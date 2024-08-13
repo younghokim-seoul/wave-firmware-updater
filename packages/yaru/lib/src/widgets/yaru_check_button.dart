@@ -75,9 +75,11 @@ class _YaruCheckButtonState extends State<YaruCheckButton> {
   @override
   Widget build(BuildContext context) {
     final states = _statesController.value;
-    final mouseCursor =
-        WidgetStateProperty.resolveAs(widget.mouseCursor, states) ??
-            YaruToggleButtonTheme.of(context)?.mouseCursor?.resolve(states);
+    final mouseCursor = WidgetStateProperty.resolveAs(widget.mouseCursor, states) ??
+        YaruToggleButtonTheme.of(context)?.mouseCursor?.resolve(states);
+
+
+
 
     return YaruToggleButton(
       title: widget.title,
@@ -92,14 +94,14 @@ class _YaruCheckButtonState extends State<YaruCheckButton> {
         mouseCursor: mouseCursor,
         statesController: _statesController,
       ),
-      mouseCursor:
-          mouseCursor ?? WidgetStateMouseCursor.clickable.resolve(states),
+      mouseCursor: mouseCursor ?? WidgetStateMouseCursor.clickable.resolve(states),
       statesController: _statesController,
       onToggled: widget.onChanged == null ? null : _onToggled,
     );
   }
 
   void _onToggled() {
+    print('YaruCheckButton._onToggled ${widget.value}');
     switch (widget.value) {
       case false:
         widget.onChanged!(true);
