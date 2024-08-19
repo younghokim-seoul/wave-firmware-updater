@@ -11,6 +11,7 @@ import 'package:wave_desktop_installer/feature/pages/setting/setting_view_model.
 import 'package:wave_desktop_installer/feature/widget/alignment_view.dart';
 import 'package:wave_desktop_installer/feature/widget/common_guide_button.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/feature/widget/size/size_common.dart';
 import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/main_view_model.dart';
@@ -95,8 +96,7 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
     final l10n = context.l10n;
 
     return Scaffold(
-        body: SizedBox(
-      width: double.infinity,
+        body: Full(
       child: Column(
         children: [
           const Gap(54),
@@ -117,7 +117,7 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
                     const Gap(36),
                     Text(
                       l10n.waveToolsAlignmentSettingText02,
-                      style: WaveTextStyles.headline5.copyWith(height: 1),
+                      style: WaveTextStyles.headline5,
                       textAlign: TextAlign.center,
                     ),
                     Expanded(child: _buildWebView()),
@@ -146,8 +146,7 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
                   opacity: _fadeAnimation,
                   child: Transform.translate(
                       offset: const Offset(0, -10), // 원하는 offset 값을 설정하세요.
-                      child: SizedBox(
-                        height: getScreenHeight(context),
+                      child: FullHeight(
                         child: Stack(
                           children: [
                             Webview(_controller),
@@ -198,9 +197,6 @@ class _SettingPageState extends ConsumerState<SettingPage> with SingleTickerProv
                             if (!state.hasData || state.data.isNullOrEmpty) {
                               return const SizedBox.shrink();
                             }
-
-
-
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

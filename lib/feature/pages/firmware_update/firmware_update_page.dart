@@ -14,6 +14,7 @@ import 'package:wave_desktop_installer/feature/pages/firmware_update/component/f
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_event.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/firmware_update_view_model.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/feature/widget/size/size_common.dart';
 import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/main_view_model.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
@@ -50,8 +51,7 @@ class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> {
     final l10n = context.l10n;
 
     return Scaffold(
-      body: SizedBox(
-        width: getScreenWidth(context),
+      body: FullWidth(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

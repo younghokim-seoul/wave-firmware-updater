@@ -8,9 +8,9 @@ import 'package:wave_desktop_installer/feature/pages/camera/camera_event.dart';
 import 'package:wave_desktop_installer/feature/pages/camera/camera_state.dart';
 import 'package:wave_desktop_installer/feature/pages/camera/camera_view_model.dart';
 import 'package:wave_desktop_installer/feature/pages/firmware_update/component/firmware_error_section.dart';
-import 'package:wave_desktop_installer/feature/pages/setting/setting_event.dart';
 import 'package:wave_desktop_installer/feature/widget/alignment_view.dart';
 import 'package:wave_desktop_installer/feature/widget/loading/dot_circle.dart';
+import 'package:wave_desktop_installer/feature/widget/size/size_common.dart';
 import 'package:wave_desktop_installer/l10n/l10n.dart';
 import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/theme/wave_tool_text_styles.dart';
@@ -19,7 +19,6 @@ import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/screen_util.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:yaru/theme.dart';
 import 'package:yaru/widgets.dart';
 
 class CameraPage extends ConsumerStatefulWidget {
@@ -99,9 +98,7 @@ class _CameraPageState extends ConsumerState<CameraPage> with SingleTickerProvid
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-        body: SizedBox(
-      width: double.infinity,
-      height: double.infinity,
+        body: Full(
       child: Column(
         children: [
           StreamBuilder<LoadingState>(
@@ -146,7 +143,6 @@ class _CameraPageState extends ConsumerState<CameraPage> with SingleTickerProvid
 
   Widget _buildWebView() {
     if (!_controller.value.isInitialized) {
-      Log.d("이니셜라이즈 실패");
       return const SizedBox.shrink();
     } else {
       return initializeError
@@ -164,8 +160,7 @@ class _CameraPageState extends ConsumerState<CameraPage> with SingleTickerProvid
                   opacity: _fadeAnimation,
                   child: Transform.translate(
                       offset: const Offset(0, -10), // 원하는 offset 값을 설정하세요.
-                      child: SizedBox(
-                        height: getScreenHeight(context),
+                      child: FullHeight(
                         child: Stack(
                           children: [
                             Webview(_controller),
