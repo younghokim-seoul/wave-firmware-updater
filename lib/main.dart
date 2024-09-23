@@ -104,7 +104,7 @@ Future<void> settingWindow() async {
     maximumSize: windowSize,
     // Add this line
     center: true,
-    titleBarStyle: !kReleaseMode ? TitleBarStyle.normal : TitleBarStyle.hidden,
+    titleBarStyle: !kReleaseMode ? TitleBarStyle.hidden : TitleBarStyle.hidden,
   );
 
   await windowManager.waitUntilReadyToShow(windowOptions);

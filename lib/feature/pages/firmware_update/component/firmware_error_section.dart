@@ -103,6 +103,7 @@ class FirmwareErrorSection extends ConsumerWidget {
       case ErrorCode.notFoundNearDevice:
         return Text(
           l10n.waveToolsSensorConnectionText04,
+          textAlign: TextAlign.center,
           style: WaveTextStyles.commentBold.copyWith(color: YaruColors.red),
         );
     }
