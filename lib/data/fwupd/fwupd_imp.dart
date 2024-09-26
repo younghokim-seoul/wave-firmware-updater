@@ -12,6 +12,7 @@ import 'package:wave_desktop_installer/data/fwupd/fwupd_listener.dart';
 import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
 import 'package:wave_desktop_installer/domain/model/firmware_version.dart';
 import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
+import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/utils/constant.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
 
@@ -39,7 +40,7 @@ class FwupdImp extends FwupdService {
 
   FirmWareChannelListener? _firmWareChannelListener;
 
-  String get parentPath => p.join(p.dirname(Platform.resolvedExecutable), '..', "BinaryPatch");
+  String get parentPath => p.join(p.dirname(Platform.resolvedExecutable), '..', '..', 'BinaryPatch');
 
   Future<File> _downloadRelease(String url) async {
     final path = p.join(_fs.systemTempDirectory.path, p.basename(url));
@@ -190,7 +191,7 @@ class FwupdImp extends FwupdService {
   Future<String> readConfig() async {
     final dir = _fs.file(p.join(parentPath, 'config.txt'));
 
-    Log.d("readConfig... $dir");
+    realLog.info('readConfig... $dir');
     if (!dir.existsSync()) {
       return '';
     }
