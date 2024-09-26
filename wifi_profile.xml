@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
       <WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
-        <name>WAVE_EA035630</name>
+        <name>WAVE_541CE318</name>
         <SSIDConfig>
           <SSID>
-            <hex>574156455f4541303335363330</hex>
-            <name>WAVE_EA035630</name>
+            <hex>574156455f3534314345333138</hex>
+            <name>WAVE_541CE318</name>
           </SSID>
         </SSIDConfig>
         <connectionType>ESS</connectionType>

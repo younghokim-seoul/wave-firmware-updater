@@ -69,7 +69,7 @@ _i1.GetIt $initGetIt(
       ));
   gh.lazySingleton<_i20.MainViewModel>(() => _i20.MainViewModel(
         gh<_i4.WifiRepository>(),
-        gh<_i11.PatchRepository>(),
+        gh<_i17.FwupdService>(),
       ));
   return getIt;
 }

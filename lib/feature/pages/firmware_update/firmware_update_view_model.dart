@@ -108,7 +108,6 @@ class FirmwareUpdateViewModel {
 
     try {
       loadState(const FirmwareVersionInfoRequested());
-      // _firmwareVersion = await _patchRepository.fetchPatchDetails();
 
       final versionConfig = await _fwupdService.readConfig();
 

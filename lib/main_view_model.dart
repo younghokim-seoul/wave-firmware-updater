@@ -5,21 +5,21 @@ import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:tuple/tuple.dart';
 import 'package:wave_desktop_installer/data/connection_status.dart';
-import 'package:wave_desktop_installer/domain/repository/bluetooth_repository.dart';
+import 'package:wave_desktop_installer/data/fwupd/fwupd_service.dart';
 import 'package:wave_desktop_installer/domain/repository/patch_repository.dart';
-import 'package:wave_desktop_installer/domain/repository/socket_repository.dart';
 import 'package:wave_desktop_installer/domain/repository/wifi_repository.dart';
+import 'package:wave_desktop_installer/main.dart';
 import 'package:wave_desktop_installer/main_state.dart';
 import 'package:wave_desktop_installer/utils/dev_log.dart';
+import 'package:wave_desktop_installer/utils/extension/value_extension.dart';
 import 'package:wave_desktop_installer/utils/rx/arc_subject.dart';
 
 @lazySingleton
 class MainViewModel {
-  MainViewModel(this._wifiRepository, this._patchRepository);
+  MainViewModel(this._wifiRepository, this._fwupdService);
 
   final WifiRepository _wifiRepository;
-  final PatchRepository _patchRepository;
-
+  final FwupdService _fwupdService;
 
   StreamSubscription<WaveSensorResponse>? _subscription;
 
@@ -27,10 +27,8 @@ class MainViewModel {
   final mainUiState = ArcSubject<MainUiState>(seed: MainUiState.initial());
   final versionState = ArcSubject<Tuple3<int, int, bool>>(seed: const Tuple3(-1, -1, false));
 
-
   Future<void> subscribeToMessages() async {
     _subscription ??= _wifiRepository.responseMessage.listen((response) async {
-
       if (response is WaveSensorHeartBeatResponse) {
         MainUiState state = mainUiState.val;
         mainUiState.val = state.copyWith(batteryLevel: response.batteryStatus);
@@ -38,12 +36,19 @@ class MainViewModel {
 
       if (response is FirmwareVersionResponse) {
         try {
-          final remote = await _patchRepository.fetchPatchDetails();
+          final versionConfig = await _fwupdService.readConfig();
 
-          final serverVersion = int.parse(remote.versionNumber.replaceAll(".", ""));
+          realLog.info('[Red dot Check] current versionConfig $versionConfig');
+
+          if (versionConfig.isNullOrEmpty) {
+            return;
+          }
+
+          final serverVersion = int.parse(versionConfig.replaceAll('.', ''));
           final deviceVersion = int.parse(response.verCode);
           final isAvailableUpdate = serverVersion > deviceVersion;
 
+          realLog.info('[Red dot Check]  serverVersion: $serverVersion, deviceVersion: $deviceVersion');
           versionState.val = Tuple3(serverVersion, deviceVersion, isAvailableUpdate);
         } catch (e) {
           Log.e("from remote error: $e");

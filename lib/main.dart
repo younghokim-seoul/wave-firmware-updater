@@ -210,7 +210,7 @@ class _StoreAppState extends ConsumerState<StoreApp> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Text('WAVE Tools', style: WaveTextStyles.appBarHeader),
-                    Text('VISION WAVE Tools Ver.1.0.0 - 20241022', style: WaveTextStyles.subtitle1),
+                    Text('VISION WAVE Tools Ver.1.0.0', style: WaveTextStyles.subtitle1),
                   ],
                 ),
               ],
